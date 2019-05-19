@@ -13,11 +13,13 @@ public class Node {
     private double alpha, beta;
     private Node lastNode;
 
-    public Node(GameState originalState, List<Action> turn, GameState state, int depth, Node lastNode){
+    public Node(GameState originalState, List<Action> turn, int depth, Node lastNode){
         this.lastNode=lastNode;
         this.depth=depth;
         this.turn=turn;
+
         GameState newState = originalState.clone();
+
         for (Action a : turn) {
             originalState.apply(a);
         }
@@ -25,9 +27,22 @@ public class Node {
         score = firstAI.heuristique(newState);
     }
 
-    public boolean equal(Node node){
-        //TODO
-        return false;
+    public boolean equals(Node node){
+        // TODO : Tester égalité de l'état impossible sans modifier la classe état ...
+        boolean res = false;
+
+        if(node.getTurn().size() != this.getTurn().size()) return false;
+
+        int nbAction = node.getTurn().size();
+        // Test to know if the turns are equals
+        for (int i =0; i<nbAction || !res; i++) {
+            if(node.getTurn().get(i) != this.getTurn().get(i)) res = true;
+        }
+        return res;
+    }
+
+    public GameState getState() {
+        return state;
     }
 
     public List<Action> getTurn() {

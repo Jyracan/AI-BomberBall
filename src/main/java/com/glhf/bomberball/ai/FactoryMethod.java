@@ -16,7 +16,7 @@ public class FactoryMethod {
     {
         this.vectAi = new Vector<String>();
         this.vectAi.add("firstAI");
-        this.vectAi.add("RandomAI");
+        this.vectAi.add("firstAI");
 
     }
 
