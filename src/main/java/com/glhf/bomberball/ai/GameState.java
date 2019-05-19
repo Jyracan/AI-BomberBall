@@ -171,7 +171,6 @@ public class GameState {
 			currentPlayer.dropBomb(Directions.DOWN);
 			break;
 		case ENDTURN:
-			
 			maze.processEndTurn();
 			gameScreen.endTurn();
 			break;

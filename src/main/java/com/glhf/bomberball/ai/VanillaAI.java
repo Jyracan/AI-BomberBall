@@ -19,6 +19,7 @@ public class VanillaAI extends AbstractAI{
 
 	@Override
 	public Action choosedAction(GameState gameState) {
+		System.out.println("Je suis full random");
 		Random rand = new Random();
 		List<Action> possibleActions= gameState.getAllPossibleActions();
 		int actionIndex=rand.nextInt(possibleActions.size());
