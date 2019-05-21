@@ -62,7 +62,7 @@ public class firstAI extends AbstractAI{
     }
 
 
-    public static int heuristique(Node n) {
+    public int heuristique(Node n) {
         //TODO
         return 0;
     }

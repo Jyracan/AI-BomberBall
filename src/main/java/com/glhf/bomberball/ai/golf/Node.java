@@ -13,18 +13,19 @@ public class Node {
     private double alpha, beta;
     private Node lastNode;
 
-    public Node(GameState originalState, List<Action> turn, int depth, Node lastNode){
+
+
+    public Node(List<Action> turn, Node lastNode){
         this.lastNode=lastNode;
-        this.depth=depth;
+        this.depth=lastNode.getDepth() + 1;
         this.turn=turn;
-
-        GameState newState = originalState.clone();
-
+        GameState newState = lastNode.getState().clone();
         for (Action a : turn) {
-            originalState.apply(a);
+            newState.apply(a);
         }
         this.state = newState;
-        score = firstAI.heuristique(this);
+        this.alpha = lastNode.alpha;
+        this.beta = lastNode.beta;
     }
 
     public boolean equals(Node node){
@@ -88,5 +89,8 @@ public class Node {
     }
     public Node getLastNode() {
         return lastNode;
+    }
+    public int getDepth() {
+        return depth;
     }
 }
