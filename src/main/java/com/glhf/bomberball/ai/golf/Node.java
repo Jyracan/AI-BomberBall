@@ -87,4 +87,6 @@ public class Node {
     public Node getLastNode() {
         return lastNode;
     }
+
+    public int getDepth() { return depth; }
 }
