@@ -12,3 +12,9 @@ build/**
 **/assetsconfigs/
 **assets/
 
+
+\.idea/libraries/Gradle__ch_qos_logback_logback_classic_1_1_2\.xml
+
+\.idea/
+
+*.class

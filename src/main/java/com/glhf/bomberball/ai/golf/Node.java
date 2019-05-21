@@ -93,4 +93,6 @@ public class Node {
     public void setBestSon(Node bestSon) {
         this.bestSon = bestSon;
     }
+
+    public int getDepth() { return depth; }
 }

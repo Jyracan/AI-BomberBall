@@ -59,7 +59,34 @@ public class firstAI extends AbstractAI{
 
         }
     }
+    /*private void remplirOpen(Node node) {
+        GameState state = node.getState();
+        List<Action> l = state.getAllPossibleActions();
+        l.remove(Action.ENDTURN);
+        List<Action> tmpl = new ArrayList<Action>();
+        tmpl.add(l.get(0));
+        Action lastAction = l.get(l.size()-1);
+        System.out.println(l.toString())
 
+        while(tmpl.size() != l.size()+2){;
+            int j = 0;
+            while(j <= tmpl.size() && tmpl.get(j) == lastAction){
+                tmpl.remove(j);
+                tmpl.add(j, l.get(0));
+                j++;
+            }
+            if(j == tmpl.size()){
+                tmpl.add(l.get(0));
+            } else {
+                tmpl.add(j, l.get(l.indexOf(tmpl.get(j)) + 1));
+                tmpl.remove(j + 1);
+            }
+            tmpl.add(Action.ENDTURN);
+            Node tmp = new Node(node.getState(), l, node.getDepth(), node.getLastNode());
+            System.out.println(tmp.toString());
+            OPEN.add(tmp);
+        }
+    }*/
 
     private double calculScore(Node n){
         if(isTerminal(n.getState())){
