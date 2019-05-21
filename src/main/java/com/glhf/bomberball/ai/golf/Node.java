@@ -28,16 +28,18 @@ public class Node {
     }
 
     public boolean equals(Node node){
-        // TODO : Tester égalité de l'état impossible sans modifier la classe état ...
-        boolean res = false;
+        boolean res = true;
 
         if(node.getTurn().size() != this.getTurn().size()) return false;
 
         int nbAction = node.getTurn().size();
         // Test to know if the turns are equals
         for (int i =0; i<nbAction || !res; i++) {
-            if(node.getTurn().get(i) != this.getTurn().get(i)) res = true;
+            if(node.getTurn().get(i) != this.getTurn().get(i)) res = false;
         }
+
+        if(node.getState().getMaze().toString() == this.getState().getMaze().toString()) res = true; // On utilise le fait que la méthode toString renvoit un JSON pour comparer les deux labyrinthes
+
         return res;
     }
 
