@@ -12,7 +12,6 @@ import java.util.List;
 public class firstAI extends AbstractAI{
 
 
-    private static final int MAX_DEPTH = 2;
     private LinkedList<Node> OPEN = new LinkedList<Node>();
     private LinkedList<Node> CLOSE = new LinkedList<Node>();
 
@@ -24,46 +23,52 @@ public class firstAI extends AbstractAI{
     @Override
     public Action choosedAction(GameState gameState) { // TODO : à changer copy paste de ramdomAI
         System.out.println("Le joueur FirstIA joue ...");
-
-        double alpha = -1, beta = 1, score;
+        double score;
+        Node firstNode = new Node(gameState);
+        OPEN.push(firstNode);
         Node tmpNode;
+
         System.out.println("Création des noeuds possbile");
-
-
         System.out.println("A la recherche du meilleur coup");
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
             score = heuristique(tmpNode);
-            if(tmpNode.update(score)){
+            if(tmpNode.update(score)){ // is true if
                 // Les valeurs de alpha et beta ce sont croisé, on peut supprimer les autres fils.
-                Node nodeTofind=tmpNode.getLastNode();
+                Node nodeTofind=tmpNode.getFather();
                 for(int i=0; i<OPEN.size();i++){
-                    if(OPEN.get(i).getLastNode() == nodeTofind) OPEN.remove(i);
+                    if(OPEN.get(i).getFather() == nodeTofind) OPEN.remove(i);
                 }
             }
             CLOSE.push(tmpNode);
+            this.setMemorizedAction(firstNode.getBestSon().getAction());
         }
 
         System.out.println("L'ia a pu terminer son calcul ! " );
         return this.getMemorizedAction();
     }
 
-    /**
-     * Function to have the best score on a branch
-     * @param n A state of the game
-     * @return the score : 1 is a win for you, -1 for your opponent  and 0 for a draw
-     */
-    private int alphaBeta(Node n, int alpha, int beta, int rg){
-        return 0;
-    }
 
     private void remplirOpen(Node node){
-        //TODO : Remplir OPEN
+        List<Action> listAction = node.getState().getAllPossibleActions();
+        GameState tmpState;
+        for (Action a : listAction) {
+            if(a == Action.ENDTURN){
+                OPEN.push(new Node(a, node)); // Indiquer le next player ?
+            }
+
+        }
     }
 
 
-    public int heuristique(Node n) {
-        //TODO
+    private double calculScore(Node n){
+        if(isTerminal(n.getState())){
+            return utilite(n.getState());
+        }else return heuristique(n);
+    }
+
+    public double heuristique(Node n) {
+
         return 0;
     }
 
@@ -86,7 +91,7 @@ public class firstAI extends AbstractAI{
      * @param n Sate
      * @return the score : 1 is a win for you, -1 for your opponent  and 0 for a draw
      */
-    private int utilite (GameState n){
+    private double utilite (GameState n){
         List<Player> lp = n.getPlayers();
         if(lp.size() ==0) return 0;
         else{

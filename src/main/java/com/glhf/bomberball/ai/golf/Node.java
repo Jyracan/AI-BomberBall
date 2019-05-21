@@ -3,41 +3,47 @@ package com.glhf.bomberball.ai.golf;
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.utils.Action;
 
-import java.util.List;
-
 public class Node {
-    private List<Action> turn;
+    private Action action;
     private GameState state;
     private int depth;
-    private double score;
     private double alpha, beta;
-    private Node lastNode;
+    private Node father;
+    private Node bestSon;
 
 
+    /**
+     * Use this constr to create the first node
+     * @param state
+     */
+    public Node(GameState state){
+        this.father =null;
+        this.depth =0;
+        this.action =null;
+        this.state = state.clone();
+        this.alpha = -1;
+        this.beta = 1;
+    }
 
-    public Node(List<Action> turn, Node lastNode){
-        this.lastNode=lastNode;
-        this.depth=lastNode.getDepth() + 1;
-        this.turn=turn;
-        GameState newState = lastNode.getState().clone();
-        for (Action a : turn) {
-            newState.apply(a);
-        }
+    /**
+     * Use this node to create node using a father
+     * @param action A list of action
+     * @param father
+     */
+    public Node(Action action, Node father){
+        this.father = father;
+        this.depth = father.getDepth() + 1;
+        this.action = action;
+        GameState newState = father.getState().clone();
+        newState.apply(action);
         this.state = newState;
-        this.alpha = lastNode.alpha;
-        this.beta = lastNode.beta;
+        this.alpha = father.alpha;
+        this.beta = father.beta;
     }
 
     public boolean equals(Node node){
         boolean res = true;
-
-        if(node.getTurn().size() != this.getTurn().size()) return false;
-
-        int nbAction = node.getTurn().size();
-        // Test to know if the turns are equals
-        for (int i =0; i<nbAction || !res; i++) {
-            if(node.getTurn().get(i) != this.getTurn().get(i)) res = false;
-        }
+        if(this.action != node.getAction()) res = false;
 
         if(node.getState().getMaze().toString() == this.getState().getMaze().toString()) res = true; // On utilise le fait que la méthode toString renvoit un JSON pour comparer les deux labyrinthes
 
@@ -53,44 +59,38 @@ public class Node {
         if(this.isMax()) this.alpha = score;
         else this.beta = score;
         if(alpha>beta) res = true;
-        this.lastNode.update(score);
+        if(this.father != null){
+            this.father.update(score);
+            this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
+        }
+
         return res;
     }
 
     /**
      * @return true if this is a node Max
      */
-    public boolean isMax(){return depth%2 ==0;}
+    public boolean isMax(){return depth %2 ==0;}
 
     public GameState getState() {
         return state;
     }
 
-    public List<Action> getTurn() {
-        return turn;
-    }
-    public double getScore() {
-        return score;
-    }
-    public double getAlpha() {
-        return alpha;
+    public Action getAction() {
+        return action;
     }
 
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    public double getBeta() {
-        return beta;
-    }
-
-    public void setBeta(double beta) {
-        this.beta = beta;
-    }
-    public Node getLastNode() {
-        return lastNode;
+    public Node getFather() {
+        return father;
     }
     public int getDepth() {
         return depth;
+    }
+    public Node getBestSon(){
+        return bestSon;
+    }
+
+    public void setBestSon(Node bestSon) {
+        this.bestSon = bestSon;
     }
 }
