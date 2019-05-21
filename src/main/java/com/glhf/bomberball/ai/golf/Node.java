@@ -24,7 +24,7 @@ public class Node {
             originalState.apply(a);
         }
         this.state = newState;
-        score = firstAI.heuristique(newState);
+        score = firstAI.heuristique(this);
     }
 
     public boolean equals(Node node){
@@ -40,6 +40,24 @@ public class Node {
         }
         return res;
     }
+
+    /**
+     * Function to update the node
+     * @param score
+     */
+    public boolean update(double score){
+        boolean res = false;
+        if(this.isMax()) this.alpha = score;
+        else this.beta = score;
+        if(alpha>beta) res = true;
+        this.lastNode.update(score);
+        return res;
+    }
+
+    /**
+     * @return true if this is a node Max
+     */
+    public boolean isMax(){return depth%2 ==0;}
 
     public GameState getState() {
         return state;
