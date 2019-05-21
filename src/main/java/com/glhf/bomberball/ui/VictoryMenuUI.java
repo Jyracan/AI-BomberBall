@@ -19,9 +19,12 @@ import com.glhf.bomberball.utils.ScreenChangeListener;
 
 import static com.glhf.bomberball.utils.Constants.PATH_GRAPHICS;
 
+import java.util.ArrayList;
+
 
 public class VictoryMenuUI extends MenuUI {
     private int previous_maze_id;
+    private boolean repeat;
 
     public VictoryMenuUI(Player player, int maze_id) {
         this.previous_maze_id = maze_id;
@@ -47,6 +50,11 @@ public class VictoryMenuUI extends MenuUI {
         addButtons();
     }
 
+    public VictoryMenuUI(Player player, int maze_id, boolean repeat) {
+        this(player,maze_id);
+        this.repeat=repeat;
+    }
+
     private void addButtons() {
         TextButton b;
         Skin skin = Graphics.GUI.getSkin();
@@ -56,13 +64,19 @@ public class VictoryMenuUI extends MenuUI {
         b = new AudioButton(Translator.translate("Replay"), skin);
         b.addListener(new ChangeListener() {
             @Override
+
             public void changed(ChangeEvent event, Actor actor) {
-            	Bomberball.changeScreen(new GameMultiScreen(Maze.importMazeMulti("maze_" + previous_maze_id), previous_maze_id));
+                if (!repeat) {
+                    Bomberball.changeScreen(new GameMultiScreen(Maze.importMazeMulti("maze_" + previous_maze_id), previous_maze_id));
+                }else {
+                    Bomberball.reinitialize();
+
+                }
             }
         });
         this.add(b).growX().space(spacing).row();
 
-        
+
 //        b = new AudioButton(Translator.translate("Multiplayer menu"), skin);
 //        b.addListener(new ScreenChangeListener(MultiMenuScreen.class));
 //        this.add(b).growX().space(spacing).row();

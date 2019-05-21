@@ -9,22 +9,22 @@ import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.config.GameConfig;
 
 public class VanillaAI extends AbstractAI{
-	
-	
+
+
 
 	public VanillaAI(GameConfig config,String player_skin,int playerId) {
-		super(config,player_skin,"VanillaAI",playerId);		
+		super(config,player_skin,"VanillaAI",playerId);
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public Action choosedAction(GameState gameState) {
-		System.out.println("Je suis full random");
 		Random rand = new Random();
 		List<Action> possibleActions= gameState.getAllPossibleActions();
 		int actionIndex=rand.nextInt(possibleActions.size());
+		System.out.println(possibleActions.get(actionIndex));
 		return  possibleActions.get(actionIndex);
 	}
-	
+
 
 }

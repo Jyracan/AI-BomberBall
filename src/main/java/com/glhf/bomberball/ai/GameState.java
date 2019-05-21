@@ -24,21 +24,21 @@ public class GameState {
 	private List<Player> players;
 	private int currentPlayerId;
 	private Player currentPlayer;
-	private GameScreen gameScreen;
-	 private Player winner;
-	 
-	 
-	 
+
+
+
+
 	public GameState(Maze maze, int currentPlayerId) {
 		this.maze=maze;
 		this.players= maze.getPlayers();
 		this.currentPlayerId = currentPlayerId;
+		currentPlayer=players.get(currentPlayerId);
 	}
-	
+
 	public List<Player> getPlayers() {
 		return players;
 	}
-	
+
 	public int getCurrentPlayerId() {
 		return currentPlayerId;
 	}
@@ -46,8 +46,10 @@ public class GameState {
 		this.currentPlayerId=currentPlayerId;
 	}
 	public GameState clone() {
-		return new GameState((Maze) this.maze.clone(),this.currentPlayerId);
-		
+		GameState gameSateClone=new GameState((Maze) this.maze.clone(),this.currentPlayerId);
+		gameSateClone.currentPlayer=(Player) currentPlayer.clone();
+		return gameSateClone;
+
 	}
 	public boolean isOver() {
 		int nAlive = 0;
@@ -57,43 +59,47 @@ public class GameState {
 		}
 		return true;
 	}
-	
+
 	public Player getCurrentPlayer() {
 		return players.get(currentPlayerId);
 	}
-	
-	
+
+
 	public List<Action> getAllPossibleActions(){
-		
+
 		List <Action> possibleActions=new ArrayList<Action>();
-		// if the player is alive so it can choose to 
+		// if the player is alive so it can choose to
 		// pass the turn by activating the Action.EndTurn
 		possibleActions.add(Action.ENDTURN);
-		System.out.println(getCurrentPlayerId()+"<->"+ players.size());
-		currentPlayer=players.get(getCurrentPlayerId());
-		List<Cell> reachableCells=MazeTransversal.getReacheableCells(currentPlayer.getCell());		
+
+		currentPlayer=players.get(currentPlayerId);
+		List<Cell> reachableCells=MazeTransversal.getReacheableCells(currentPlayer.getCell());
 		for (Cell cell :reachableCells) {
-		
+			// get the direction
 			Directions possibleDirection=currentPlayer.getCell().getCellDir(cell);
+
+
 			if (possibleDirection !=null ){
 				if(currentPlayer.getMovesRemaining()>0)
 					possibleActions.add(getPossibleMove(possibleDirection));
-				if(currentPlayer.getNumberBombRemaining()>0){
+
+
+				if(currentPlayer.getNumberBombRemaining()>0)
 					possibleActions.add(getPossibleBombDropping(possibleDirection));
-				}
+
 			}
-			
-		
+
+
 		}
-		
+
 		return possibleActions;
 	}
-		
-		
-		
+
+
+
 	private Action getPossibleMove(Directions direction) {
 		Action possibleAction=null;
-		 switch (direction) {
+		switch (direction) {
 			case DOWN:
 				possibleAction=Action.MOVE_DOWN;
 				break;
@@ -107,13 +113,13 @@ public class GameState {
 				break;
 			default:
 				break;
-			}
-		 return possibleAction;
+		}
+		return possibleAction;
 	}
 
 	private Action getPossibleBombDropping(Directions direction) {
 		Action possibleAction=null;
-		 switch (direction) {
+		switch (direction) {
 			case DOWN:
 				possibleAction=Action.DROP_BOMB_DOWN;
 				break;
@@ -127,150 +133,66 @@ public class GameState {
 				break;
 			default:
 				break;
-			}
-		 return possibleAction;
+		}
+		return possibleAction;
 	}
 
-	
-	
+
+
 	public void apply(Action action) {
 		// TODO Auto-generated method stub
 		currentPlayer=getCurrentPlayer();
 		switch (action) {
-		case MOVE_UP:
-			gameScreen.setMoveMode();
-			currentPlayer.move(Directions.UP);
-			
-			break;
-		case MOVE_DOWN:
-			gameScreen.setMoveMode();
-			currentPlayer.move(Directions.DOWN);
-			break;
-		case MOVE_LEFT:
-			gameScreen.setMoveMode();
-			currentPlayer.move(Directions.LEFT);
-			break;
-		case MOVE_RIGHT:
-			gameScreen.setMoveMode();
-			currentPlayer.move(Directions.RIGHT);
-			break;
-		case DROP_BOMB_RIGHT:
-			gameScreen.setBombMode();
-			currentPlayer.dropBomb(Directions.RIGHT);
-			break;
-		case DROP_BOMB_UP:
-			gameScreen.setBombMode();
-			currentPlayer.dropBomb(Directions.UP);
-			break;
-		case DROP_BOMB_LEFT:
-			gameScreen.setBombMode();
-			currentPlayer.dropBomb(Directions.LEFT);
-			break;
-		case DROP_BOMB_DOWN:
-			gameScreen.setBombMode();
-			currentPlayer.dropBomb(Directions.DOWN);
-			break;
-		case ENDTURN:
-			maze.processEndTurn();
-			gameScreen.endTurn();
-			break;
-		default:
-			break;
+			case MOVE_UP:
+
+				currentPlayer.move(Directions.UP);
+
+				break;
+			case MOVE_DOWN:
+
+				currentPlayer.move(Directions.DOWN);
+				break;
+			case MOVE_LEFT:
+
+				currentPlayer.move(Directions.LEFT);
+				break;
+			case MOVE_RIGHT:
+
+				currentPlayer.move(Directions.RIGHT);
+				break;
+			case DROP_BOMB_RIGHT:
+
+				currentPlayer.dropBomb(Directions.RIGHT);
+				break;
+			case DROP_BOMB_UP:
+
+				currentPlayer.dropBomb(Directions.UP);
+				break;
+			case DROP_BOMB_LEFT:
+
+				currentPlayer.dropBomb(Directions.LEFT);
+				break;
+			case DROP_BOMB_DOWN:
+
+				currentPlayer.dropBomb(Directions.DOWN);
+				break;
+			case ENDTURN:
+				currentPlayer.endTurn();
+				break;
+			default:
+				break;
 		}
-		
+
 	}
-	
 
 
-    @SuppressWarnings("deprecation")
-	public synchronized void playAI() {
-		
-    	if (maze.getPlayers().get(currentPlayerId) instanceof AbstractAI) {
-    		ExecutorService executor = Executors.newSingleThreadExecutor();
-            AbstractAI ia = (AbstractAI) maze.getPlayers().get(currentPlayerId);
-            AIThread calcul = new AIThread(ia, this, executor);
-            executor.execute(calcul);
-            try {
-            	 if (!executor.awaitTermination(AbstractAI.TIME_TO_THINK, TimeUnit.MILLISECONDS)) {
-            		 executor.shutdown();
-            	 }
-            }catch (InterruptedException e) {
-            	e.getStackTrace();
-			}
-            
-            try {
-            	calcul.join();
-            }catch (InterruptedException e) {
-            	 e.getStackTrace();
-			}
-            
-            Action action;
-            if (calcul.getChoosedAction() == null && ia.getMemorizedAction() == null) {
-            	GameMultiConfig config = GameMultiConfig.get();
-            	action = (Action) new RandomAI(config,config.player_skins[currentPlayerId],currentPlayerId).choosedAction(this);
-           
-            }else if (calcul.getChoosedAction() == null && ia.getMemorizedAction() != null) {
-    		
-    		              System.err.println("Aucune action choisie mais action mémorisée");
-    		                action = ia.getMemorizedAction();
-    		
-    		
-    		            } else {
-    		
-    		                action = calcul.getChoosedAction();
-    		}
-    		
-            if (!isOver()) {
-            	apply(action);
-            }
-              // Kill remaining IAThread threads
-              for (Thread t : Thread.getAllStackTraces().keySet()) {
-                  for (StackTraceElement ste : t.getStackTrace()) {
-                      if (ste.getClassName().equals("fr.lesprogbretons.seawar.ia.IAThread")) {
-                          t.stop();
-                      }
-                  }
-              }
-  
-              try {
-  
-                  Thread.sleep(200);
-              } catch (InterruptedException ex) {
-  
-  
-              }
-  
-            
-            
-            
-    	}
-		
+
+
+
+
+	public Maze getMaze() {
+		return maze;
 	}
-	
-    
 
-	
-    public void launchTurn(GameScreen gameScreen) {
-        Thread t = new Thread(() -> {
-        	this.gameScreen=gameScreen;
-			//logger.debug("Is there any Information");
-        	
-        	while (getCurrentPlayer() instanceof AbstractAI) {
-        	 if (!isOver()) {
-                playAI();
-                
-              }
-            	
-                
-        	}
-        });
-        
-        t.start();
-       
-    }
-	
-	
-	
-	
-	
+
 }

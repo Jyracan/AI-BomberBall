@@ -28,18 +28,18 @@ public abstract class GameScreen extends AbstractScreen {
 
     protected Player current_player;
     protected ArrayList<Cell> selected_cells = new ArrayList<>();
- 
-    
-	
+
+
+
     public GameScreen(Maze maze) {
         super();
 //        maze = new Maze(11, 13);
 //        maze.exportConfig(filename);
         this.maze = maze;
         this.maze_drawer = new MazeDrawer(maze,1/3f,1f,2/10f,1f, MazeDrawer.Fit.BEST);
-    
 
-        
+
+
     }
 
     @Override
@@ -128,14 +128,67 @@ public abstract class GameScreen extends AbstractScreen {
         input_handler.registerActionHandler(Action.MOVE_RIGHT, () -> moveCurrentPlayer(Directions.RIGHT));
     }
 
+//
+
+    public void applyAction(Action a) {
+        switch (a) {
+            case MOVE_UP:
+                moveCurrentPlayer(Directions.UP);
+
+                break;
+            case MOVE_DOWN:
+                moveCurrentPlayer(Directions.DOWN);
+                break;
+            case MOVE_LEFT:
+                moveCurrentPlayer(Directions.LEFT);
+                break;
+            case MOVE_RIGHT:
+                moveCurrentPlayer(Directions.RIGHT);
+                break;
+            case DROP_BOMB_RIGHT:
+                dropBomb(Directions.RIGHT);
+                break;
+            case DROP_BOMB_UP:
+                dropBomb(Directions.UP);
+                break;
+            case DROP_BOMB_LEFT:
+
+                dropBomb(Directions.LEFT);
+                break;
+            case DROP_BOMB_DOWN:
+
+                dropBomb(Directions.DOWN);
+                break;
+            case ENDTURN:
+                endTurn();
+
+                break;
+            default:
+                break;
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ////////////////////////////////////////////////////////////////////////////
 
     protected void moveCurrentPlayer(Directions dir) {
 //        try {
-            current_player.move(dir);
-            clearCellsEffect();
-            setMoveEffect();
+        current_player.move(dir);
+        clearCellsEffect();
+        setMoveEffect();
 //        } catch (RuntimeException e) {
 //            System.out.println("The player probably died");
 //        }
@@ -144,40 +197,40 @@ public abstract class GameScreen extends AbstractScreen {
     public void endTurn()
     {
         input_handler.lock(true);
-		clearCellsEffect();
-	    maze.processEndTurn();
-	    current_player.endTurn();
-        
+        clearCellsEffect();
+        maze.processEndTurn();
+        current_player.endTurn();
+
         task = new Timer.Task() {
             @Override
             public void run() {
-            	
-            	System.out.println(current_player);
+
+                System.out.println(current_player);
                 nextPlayer();
             }
         };
         Timer.schedule(task, 0.5f);
     }
-    
-	private void forceThreadStop() {
-		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-		Pattern p = Pattern.compile("^pool-[0-9]+-thread-[0-9]+$");
-		for (Thread t : threadSet) {
-			if (p.matcher(t.getName()).matches()) {
-				t.stop();
-			}
-		}
-	}
-    
+
+    private void forceThreadStop() {
+        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+        Pattern p = Pattern.compile("^pool-[0-9]+-thread-[0-9]+$");
+        for (Thread t : threadSet) {
+            if (p.matcher(t.getName()).matches()) {
+                t.stop();
+            }
+        }
+    }
+
 
     protected abstract void nextPlayer();
 
     protected abstract void endGame();
 
     protected abstract void startGame();
-    
-    
-   
-    
-    
+
+
+
+
+
 }

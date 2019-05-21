@@ -14,19 +14,19 @@ public class MultiMenuScreen extends MenuScreen {
     public Maze maze;
     public static String[] playable = {"knight_m", "knight_f", "black_knight", "elf_f", "elf_m", "wizzard_m", "wizzard_f", "no_player"};
     public static final int nb_Playable = playable.length;
-    private int maze_id = 0;
+    private int maze_id = 3;
     private int maze_count;
 
     public static int p1_id=0;
     public static int p2_id=1;
-   // public static int p3_id=nb_Playable-1;
-   // public static int p4_id=nb_Playable-1;
+    // public static int p3_id=nb_Playable-1;
+    // public static int p4_id=nb_Playable-1;
 
     public MultiMenuScreen() {
         maze_count = Maze.countMazesMulti();
         System.out.println("MC " + maze_count);
         maze = Maze.importMazeMulti("maze_" + maze_id);
-       // this.addUI(new MultiMenuUI(this));
+        // this.addUI(new MultiMenuUI(this));
     }
 
     public void nextMaze() {
@@ -98,8 +98,8 @@ public class MultiMenuScreen extends MenuScreen {
         System.out.println("Loading config"+"" +
                 "\nPlayer 1 is: " + MultiMenuScreen.playable[MultiMenuScreen.p1_id]
                 +"\nPlayer 2 is:" + MultiMenuScreen.playable[MultiMenuScreen.p2_id]);
-           //     +"\nPlayer 3 is:" + MultiMenuScreen.playable[MultiMenuScreen.p3_id]
-            //    +"\nPlayer 4 is:" + MultiMenuScreen.playable[MultiMenuScreen.p4_id]);
+        //     +"\nPlayer 3 is:" + MultiMenuScreen.playable[MultiMenuScreen.p3_id]
+        //    +"\nPlayer 4 is:" + MultiMenuScreen.playable[MultiMenuScreen.p4_id]);
         // Initialization of the number of players
         config.player_count= 2;
         //if (MultiMenuScreen.p3_id==MultiMenuScreen.nb_Playable-1){config.player_count--;}
