@@ -9,14 +9,14 @@ import com.glhf.bomberball.utils.Action;
 import java.util.LinkedList;
 import java.util.List;
 
-public class firstAI extends AbstractAI{
+public class FirstAI extends AbstractAI{
 
 
     private LinkedList<Node> OPEN = new LinkedList<Node>();
     private LinkedList<Node> CLOSE = new LinkedList<Node>();
 
 
-    public firstAI(GameConfig config, String player_skin, int playerId) {
+    public FirstAI(GameConfig config, String player_skin, int playerId) {
         super(config,player_skin,"FirstAi",playerId);
     }
 

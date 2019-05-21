@@ -83,9 +83,7 @@ public class Node {
     public Node getFather() {
         return father;
     }
-    public int getDepth() {
-        return depth;
-    }
+
     public Node getBestSon(){
         return bestSon;
     }
