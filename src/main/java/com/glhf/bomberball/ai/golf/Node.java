@@ -6,10 +6,11 @@ import com.glhf.bomberball.utils.Action;
 public class Node {
     private Action action;
     private GameState state;
-    private int depth;
     private double alpha, beta;
     private Node father;
     private Node bestSon;
+    private boolean max;
+    private int idPlayer;
 
 
     /**
@@ -18,11 +19,12 @@ public class Node {
      */
     public Node(GameState state){
         this.father =null;
-        this.depth =0;
         this.action =null;
         this.state = state.clone();
+        this.idPlayer = state.getCurrentPlayerId();
         this.alpha = -1;
         this.beta = 1;
+        this.max=true;
     }
 
     /**
@@ -32,9 +34,9 @@ public class Node {
      */
     public Node(Action action, Node father){
         this.father = father;
-        this.depth = father.getDepth() + 1;
         this.action = action;
         GameState newState = father.getState().clone();
+        max = (newState.getCurrentPlayerId() == this.idPlayer);
         newState.apply(action);
         this.state = newState;
         this.alpha = father.alpha;
@@ -70,7 +72,9 @@ public class Node {
     /**
      * @return true if this is a node Max
      */
-    public boolean isMax(){return depth %2 ==0;}
+    public boolean isMax(){
+        return this.max;
+    }
 
     public GameState getState() {
         return state;
@@ -83,9 +87,7 @@ public class Node {
     public Node getFather() {
         return father;
     }
-    public int getDepth() {
-        return depth;
-    }
+
     public Node getBestSon(){
         return bestSon;
     }
