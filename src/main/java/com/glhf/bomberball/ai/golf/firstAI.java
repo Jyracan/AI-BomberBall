@@ -3,7 +3,9 @@ package com.glhf.bomberball.ai.golf;
 import com.glhf.bomberball.ai.AbstractAI;
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.config.GameConfig;
+import com.glhf.bomberball.gameobject.GameObject;
 import com.glhf.bomberball.gameobject.Player;
+import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
 
 import java.util.LinkedList;
@@ -94,7 +96,19 @@ public class firstAI extends AbstractAI{
         }else return heuristique(n);
     }
 
+    public double suicide(Node n){
+        Cell c = new Cell(n.getState().getCurrentPlayer().getX(), n.getState().getCurrentPlayer().getY());
+        List<Cell> cells = c.getAdjacentCells();
+        for(Cell test : cells){
+            if(test.getClass().getTypeName() == "Bomb" && n.getState().getCurrentPlayer().getMovesRemaining() != 0){
+                return -1;
+            }
+        }
+        return 0;
+    }
+
     public double heuristique(Node n) {
+        suicide(n);
 
         return 0;
     }
