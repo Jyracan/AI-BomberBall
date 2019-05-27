@@ -10,17 +10,19 @@ import com.glhf.bomberball.utils.Directions;
 public class Player extends Character {
 
     private ArrayList<Observer> observers;
-    private boolean active;
+    protected boolean active;
+    protected String name;
 
-    private int initial_bomb_number;
-    private int initial_bomb_range;
+    protected int initial_bomb_number;
+    protected int initial_bomb_range;
 
-    private transient int bombs_remaining;
+    protected transient int bombs_remaining;
 
     public transient int bonus_bomb_number = 0;
     public transient int bonus_bomb_range = 0;
     public transient int bonus_moves = 0;
-    protected int playerId;
+    protected int player_id;
+
     public Player(String player_skin,
                   int life,
                   int initial_moves,
@@ -30,6 +32,23 @@ public class Player extends Character {
         super(player_skin, life, initial_moves);
         this.observers = new ArrayList<>();
         this.active = false;
+        this.name = "Human";
+        this.initial_bomb_number = initial_bomb_number;
+        this.initial_bomb_range = initial_bomb_range;
+        initialize();
+    }
+
+    public Player(String player_skin,
+                  int life,
+                  int initial_moves,
+                  int initial_bomb_number,
+                  int initial_bomb_range,
+                  String name)
+    {
+        super(player_skin, life, initial_moves);
+        this.observers = new ArrayList<>();
+        this.active = false;
+        this.name = name;
         this.initial_bomb_number = initial_bomb_number;
         this.initial_bomb_range = initial_bomb_range;
         initialize();
@@ -93,7 +112,7 @@ public class Player extends Character {
     }
 
     @Override
-	public void interactWithCell(Cell cell) {
+    public void interactWithCell(Cell cell) {
         for (Bonus bonus : cell.getInstancesOf(Bonus.class)) {
             bonus.dispose();
             bonus.applyEffect(this);
@@ -128,18 +147,38 @@ public class Player extends Character {
 
     @Override
     public GameObject clone() {
-        GameObject p = new Player(skin, life, initial_moves, initial_bomb_number, initial_bomb_range);
+        Player clone = new Player(skin, life, initial_moves, initial_bomb_number, initial_bomb_range, name);
+        clone.sprite = this.sprite;
+        clone.cell = this.cell;
 
-        return p;
+        clone.moves_remaining = this.moves_remaining;
+
+        clone.active = this.active;
+        clone.bombs_remaining = this.bombs_remaining;
+
+        clone.bonus_bomb_number = this.bonus_bomb_number;
+        clone.bonus_bomb_range = this.bonus_bomb_range;
+        clone.bonus_moves = this.bonus_moves;
+        clone.player_id = this.player_id;
+
+        return clone;
     }
 
-	public int getCurrentPlayerId() {
-		// TODO Auto-generated method stub
-		return playerId;
-	}
-	public void setCurrentPlayerId(int playerId) {
-		this.playerId=playerId;
-		
-	}
+    public int getPlayerId() {
+        return player_id;
+    }
+    public void setPlayerId(int playerId) {
+        this.player_id=playerId;
+
+    }
+
+    @Override
+    public String toString() {
+        return "Player [ name=" + name + ", bombs_remaining="
+                + bombs_remaining + ", player_id=" + player_id + ", moves_remaining=" + moves_remaining + ", life="
+                + life + "]";
+    }
+
+
 }
 

@@ -32,7 +32,7 @@ public class GameInfiniteScreen extends GameScreen {
         current_player.initiateTurn();      //after the UI because initiateTurn notify the ui
         setMoveMode();
 
-        NumberTurn.getINSTANCE().resetNbTurn();
+        NumberTurn.getInstance().resetNbTurn();
 
         Timer.schedule(new Timer.Task() {   //Verifying if an ennemy has killed the player
             @Override
@@ -46,7 +46,7 @@ public class GameInfiniteScreen extends GameScreen {
     }
 
     @Override
-	protected void endGame() {
+    protected void endGame() {
         GameInfiniteConfig config = GameInfiniteConfig.get();
         Score s = Score.getINSTANCE();
         if(config.highscore < s.getScore()){
@@ -69,9 +69,9 @@ public class GameInfiniteScreen extends GameScreen {
      * gives the next current_player after a turn. If the next current_player is dead, choose the following current_player.
      */
     @Override
-	protected void nextPlayer() {
+    protected void nextPlayer() {
         if(GameInfiniteConfig.get().finite_number_turn){
-            NumberTurn nt = NumberTurn.getINSTANCE();
+            NumberTurn nt = NumberTurn.getInstance();
             nt.decreaseTurn(1);
             if(nt.getNbTurn()==0){
                 endGame();
