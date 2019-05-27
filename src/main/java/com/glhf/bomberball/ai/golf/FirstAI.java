@@ -183,13 +183,7 @@ public class FirstAI extends AbstractAI{
      * @return the score : 1 is a win for you, -1 for your opponent  and 0 for a draw
      */
     private double utilite (GameState n){
-        List<Player> lp = n.getPlayers();
-        if(lp.size() == 0) return 0;
-        else{
-            for (Player p: lp) {
-                if(p.getPlayerId() == this.getPlayerId()) return 1;
-            }
-        }
-        return -1;
+        if(n.getWinner().getPlayerId() == this.getPlayerId()) return 1;
+        else return -1;
     }
 }
