@@ -3,9 +3,11 @@ package com.glhf.bomberball.ai.golf;
 import com.glhf.bomberball.ai.AbstractAI;
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.config.GameConfig;
-import com.glhf.bomberball.gameobject.Player;
+import com.glhf.bomberball.gameobject.*;
+import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.utils.Action;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -78,6 +80,88 @@ public class FirstAI extends AbstractAI{
 
         return 0;
     }
+
+    /**
+     * @param n Node
+     * @return a float between 0 and 1 proportional to the number of crates destroyed
+     */
+    public static double nbCaisseDetruite (Node n){
+        double score = 0;
+        Maze m = n.getState().getMaze();
+        for (int i=0;i<=m.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
+            for (int j=0;j<m.getHeight();j++){
+                boolean cond = false;
+                int it = 0;
+                ArrayList<GameObject> objects = m.getCellAt(i,j).getGameObjects();
+                while (!cond && it<objects.size()){
+                    if (objects.get(it) instanceof Bomb){    //verifier si la case contient une bombe
+                        cond = true;
+                    }else it++;
+                }
+                if (cond){  //si elle contient une bombe    //si la case contient une bombe
+                    int range = n.getState().getCurrentPlayer().getBombRange(); //on recupere la range de la bombe
+                    //HAUT
+                    cond = false;
+                    int c=1;
+                    while (c<range && !cond) {
+                        objects = m.getCellAt(i,j+c).getGameObjects();
+                        c++;
+                        it = 0;
+                        while (!cond && it<objects.size()){
+                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
+                                cond = true;
+                            }else it++;
+                        }
+                    }
+                    if (cond){score=score+0.03;};
+                    //BAS
+                    cond = false;
+                    c=1;
+                    while (c<range && !cond) {
+                        objects = m.getCellAt(i,j-c).getGameObjects();
+                        c++;
+                        it = 0;
+                        while (!cond && it<objects.size()){
+                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
+                                cond = true;
+                            }else{it++;}
+                        }
+                    }
+                    if (cond){score=score+0.03;}
+                    //DROITE
+                    cond = false;
+                    c=1;
+                    while (c<range && !cond) {
+                        objects = m.getCellAt(i+c,j).getGameObjects();
+                        c++;
+                        it = 0;
+                        while (!cond && it<objects.size()){
+                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
+                                cond = true;
+                            }else it++;
+                        }
+                    }
+                    if (cond){score=score+0.03;};
+                    //GAUCHE
+                    cond = false;
+                    c=1;
+                    while (c<range && !cond) {
+                        objects = m.getCellAt(i-c,j).getGameObjects();
+                        c++;
+                        it = 0;
+                        while (!cond && it<objects.size()){
+                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
+                                cond = true;
+                            }else it++;
+                        }
+                    }
+                    if (cond){score=score+0.03;}
+                }
+            }
+        }
+        return Math.min(score,0.99);
+    }
+
 
     /**
      * Say if the state correspond to the end of a game

@@ -30,14 +30,16 @@ public abstract class AbstractAI extends Player {
 
 
 	public void setMemorizedAction(Action memorizedAction) {
-		
+		System.out.println("##############################");
+		System.out.println("Memorized Action :" + memorizedAction.toString());
+		System.out.println("##############################");
 		this.memorizedAction = memorizedAction;
 	}
 
 	
 	public Action getMemorizedAction() {
 		return memorizedAction;
-		
+
 	}
 	public final void memorizeAction(Action action) {
 		
