@@ -10,8 +10,6 @@ import java.util.*;
 
 public class MazeTransversal{
 
-    private static Random rand = new Random();
-
     /**
      * Returns all reacheable cells whitin a specified range from a cell
      * @param cell_origin
@@ -30,7 +28,7 @@ public class MazeTransversal{
         while (depth < range) {
             while (!active_queue.isEmpty()) {
                 Cell c = active_queue.poll();
-                for (Cell other : c.getAdjacentCells()) {
+                for (Cell other : c.getAdjacentCellsInMaze()) {
                     if (!cells.contains(other) && other.isWalkable()) {
                         inactive_queue.add(other);
                         cells.add(other);
@@ -58,7 +56,7 @@ public class MazeTransversal{
         queue.add(cell_origin);
         while (!queue.isEmpty()) {
             Cell c = queue.poll();
-            for (Cell other : c.getAdjacentCells()) {
+            for (Cell other : c.getAdjacentCellsInMaze()) {
                 if (!cells.contains(other)) {
                     queue.add(other);
                     cells.add(other);
@@ -78,7 +76,7 @@ public class MazeTransversal{
             if (c.getX() == cell_final.getX() && c.getY() == cell_final.getY()) {
                 return true;
             }
-            for (Cell other : c.getAdjacentCells()) {
+            for (Cell other : c.getAdjacentCellsInMaze()) {
                 if(other.getInstancesOf(IndestructibleWall.class).size() == 0){
                     if (!cells.contains(other)) {
                         queue.add(other);
@@ -217,6 +215,7 @@ public class MazeTransversal{
      * @param range
      * @return ArrayList<Directions>
      */
+    @SuppressWarnings("unchecked")
     public static ArrayList<Directions> depth_graph_transversal(Cell cell_origin, int range) {
         ArrayList<Cell> cells = new ArrayList<>();
         LinkedList<Cell> active_queue = new LinkedList<>();
@@ -231,7 +230,7 @@ public class MazeTransversal{
         while (depth < range) {
             while (!active_queue.isEmpty()) {
                 Cell c = active_queue.poll();
-                for (Cell other : c.getAdjacentCells()) {
+                for (Cell other : c.getAdjacentCellsInMaze()) {
                     if (!cells.contains(other) && other.isWalkable()) {
                         inactive_queue.add(other);
                         path_bis = (ArrayList<Directions>) paths.get(c).clone();

@@ -19,7 +19,7 @@ public abstract class GameObject {
     protected int life = 1;
     protected transient AtlasRegion sprite;
     protected transient Cell cell;
-    
+
     //animation de deplacement
     private transient Vector2 offsetVec;
     private transient int frames_left;
@@ -52,7 +52,7 @@ public abstract class GameObject {
     }
 
     @Override
-	public GameObject clone(){
+    public GameObject clone(){
         throw new RuntimeException(this.getClass()+" does not have clone method !!");
     }
 
@@ -76,7 +76,7 @@ public abstract class GameObject {
      */
     public void getDamage(int damage){
         life -= damage;
-        Score.getINSTANCE().increaseScore(scoreWhileDestroyed());
+//        Score.getINSTANCE().increaseScore(scoreWhileDestroyed());
         if (life <= 0) {
             this.dispose();
         }
@@ -154,9 +154,9 @@ public abstract class GameObject {
             throw new RuntimeException("GameObject's cell is null");
         }
     }
-    
+
     //============== animation =================
-    
+
     private void startAnimation(Cell dest_cell){
         offsetVec.x = (cell.getX()-dest_cell.getX()) / (float) Constants.NB_ANIMATION_FRAMES;
         offsetVec.y = (cell.getY()-dest_cell.getY()) / (float) Constants.NB_ANIMATION_FRAMES;

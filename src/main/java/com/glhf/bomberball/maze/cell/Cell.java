@@ -43,13 +43,19 @@ public class Cell {
         objects = new ArrayList<>();
         adjacent_cells = new Cell[Directions.values().length];
     }
-    
-    
+
+
     public Cell clone() {
-    	return new Cell(x,y);
+        Cell clone = new Cell(x,y);
+        for (GameObject o : this.objects) {
+            GameObject cloneO = o.clone();
+            clone.addGameObject(cloneO);
+        }
+        // Warning: adjacent cells cannot be set here
+        return clone;
     }
-    
-    
+
+
 
     /**
      * Initializes this cell (gives a cell a local view of the maze)
@@ -106,7 +112,7 @@ public class Cell {
      * @return List of all adjacent cells
      * Discards null adjacent cells
      */
-    public ArrayList<Cell> getAdjacentCells()
+    public ArrayList<Cell> getAdjacentCellsInMaze()
     {
         ArrayList<Cell> cells = new ArrayList<>();
         for (Directions dir : Directions.values()) {
@@ -114,6 +120,20 @@ public class Cell {
             if (c != null) {
                 cells.add(c);
             }
+        }
+        return cells;
+    }
+
+    /**
+     * @return List of all adjacent cells
+     * Discards null adjacent cells
+     */
+    public ArrayList<Cell> getAdjacentCells()
+    {
+        ArrayList<Cell> cells = new ArrayList<>();
+        for (Directions dir : Directions.values()) {
+            Cell c = getAdjacentCell(dir);
+            cells.add(c);
         }
         return cells;
     }
@@ -258,4 +278,12 @@ public class Cell {
         int dy = y - cell.y;
         return (float) Math.sqrt(dx*dx+dy*dy);
     }
+
+
+    @Override
+    public String toString() {
+        return "Cell [x=" + x + ", y=" + y + ", objects=" + objects + "]";
+    }
+
+
 }

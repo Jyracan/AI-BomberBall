@@ -19,7 +19,7 @@ public class FirstAI extends AbstractAI{
 
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
-        super(config,player_skin,"FirstAi",playerId);
+        super(config,"elf_m","FirstAi",playerId);
     }
 
     @Override
@@ -172,9 +172,9 @@ public class FirstAI extends AbstractAI{
         boolean jCourantMort =true;
         for (Player p: n.getPlayers()) {
             // If our player isn't in the remaining player it's the end for him ...
-            if(p.getCurrentPlayerId() == this.getPlayerId()) jCourantMort =false;
+            if(p.getPlayerId() == this.getPlayerId()) jCourantMort =false;
         }
-        return n.isOver() || !jCourantMort;
+        return n.gameIsOver() || !jCourantMort;
     }
 
     /**
@@ -187,7 +187,7 @@ public class FirstAI extends AbstractAI{
         if(lp.size() == 0) return 0;
         else{
             for (Player p: lp) {
-                if(p.getCurrentPlayerId() == this.getPlayerId()) return 1;
+                if(p.getPlayerId() == this.getPlayerId()) return 1;
             }
         }
         return -1;

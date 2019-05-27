@@ -29,7 +29,7 @@ public class Main{
 		if (args.length ==0) {
 			// IA mode 
 			System.out.println("AI Mode");
-			bomberball=new Bomberball("FirstAI","FirstAI");
+			bomberball=new Bomberball("FirstAI","RandomAI");
 			
 		}else {
 				
