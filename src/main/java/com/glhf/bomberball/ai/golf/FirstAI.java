@@ -6,6 +6,7 @@ import com.glhf.bomberball.config.GameConfig;
 import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.utils.Action;
+import com.glhf.bomberball.maze.cell.Cell;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -80,7 +81,8 @@ public class FirstAI extends AbstractAI{
         Cell c = new Cell(n.getState().getCurrentPlayer().getX(), n.getState().getCurrentPlayer().getY());
         List<Cell> cells = c.getAdjacentCells();
         for(Cell test : cells){
-            if(test.getClass().getTypeName() == "Bomb" && n.getState().getCurrentPlayer().getMovesRemaining() != 0){
+            if(test.getGameObjects().get(0) instanceof Bomb && n.getState().getCurrentPlayer().getMovesRemaining() != 0){
+                System.out.println("Je retourne -1");
                 return -1;
             }
         }
