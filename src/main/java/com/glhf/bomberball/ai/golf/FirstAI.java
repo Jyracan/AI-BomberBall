@@ -5,7 +5,9 @@ import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.config.GameConfig;
 import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
+import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
+import com.glhf.bomberball.utils.Directions;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -92,6 +94,40 @@ public class FirstAI extends AbstractAI{
         double res = nbCaisseDetruite(n, 0.03);
         if(!n.isMax()) res= - res;
         return res;
+    }
+
+
+    /**
+     * @param n Node
+     * @return true if opponent can kill IA in his next turn, else false
+     */
+    public static boolean inRangeOfOpponent (Node n){
+        int id = n.getState().getCurrentPlayerId();
+        int idOpponent = 1 - id;
+        Player ai = n.getState().getPlayers().get(id);
+        Player opponent = n.getState().getPlayers().get(idOpponent);
+        int range = opponent.getBombRange()+opponent.getNumberMoveRemaining();
+        return possiblePath(n,ai.getCell(),opponent.getCell(),range);
+    }
+
+    /**
+     * @param n Node
+     * @return true if there is a walkable path between 2 cells, path must be shorter than range
+     */
+    public static boolean possiblePath (Node n, Cell a, Cell b, int range) {
+        if (a.equals(b)) {
+            return true;
+        } else if (range == 0 || !a.isWalkable()) {
+            return false;
+        } else {
+            int nbAdj = a.getAdjacentCellsInMaze().size();
+            for (int i=0;i<nbAdj;i++) {
+                if (possiblePath(n, a.getAdjacentCellsInMaze().get(i), b, range - 1)){
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     /**
