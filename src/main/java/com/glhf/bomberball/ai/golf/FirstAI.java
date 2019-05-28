@@ -36,15 +36,9 @@ public class FirstAI extends AbstractAI{
             tmpNode = OPEN.pop();
             score = calculScore(tmpNode);
             if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
-//                Node nodeTofind=tmpNode.getFather();
-//                for (Node nodeIt: OPEN) {   // Un peu d'élagage
-//                    if (nodeIt.getFather() == nodeTofind) OPEN.remove(nodeIt);
-//                }
-//                System.out.println("On mémorise l'action : " + nextNode.getAction());
                 this.setMemorizedAction(firstNode.getBestSon().getAction());
             }
         }
-
         System.out.println("L'ia a pu terminer son calcul ! " );
         return this.getMemorizedAction();
     }
@@ -75,8 +69,7 @@ public class FirstAI extends AbstractAI{
 
     public double heuristique(Node n) {
         double res;
-        //res = nbCaisseDetruite (n,0.03);
-        res = 0.1;
+        res = nbCaisseDetruite (n,0.03);
         if(!n.isMax()) res= - res;
         return res;
     }
