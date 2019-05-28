@@ -13,8 +13,7 @@ import java.util.LinkedList;
 public class FirstAI extends AbstractAI{
 
 
-    private LinkedList<Node> OPEN = new LinkedList<Node>();
-    private static  Node nextNode=null;
+    private LinkedList<Node> OPEN;
 
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
@@ -23,15 +22,11 @@ public class FirstAI extends AbstractAI{
 
     @Override
     public Action choosedAction(GameState gameState) {
+        OPEN = new LinkedList<Node>();
         System.out.println("Le joueur FirstIA joue ...");
         double score;
         Node firstNode;
-        if(nextNode != null){
-            firstNode = nextNode;
-            firstNode.setFather(null);
-        }else{
-            firstNode = new Node(gameState);
-        }
+        firstNode = new Node(gameState);
         remplirOpen(firstNode);
         Node tmpNode;
 
@@ -45,9 +40,8 @@ public class FirstAI extends AbstractAI{
 //                for (Node nodeIt: OPEN) {   // Un peu d'élagage
 //                    if (nodeIt.getFather() == nodeTofind) OPEN.remove(nodeIt);
 //                }
-                nextNode = firstNode.getBestSon();
 //                System.out.println("On mémorise l'action : " + nextNode.getAction());
-                this.setMemorizedAction(nextNode.getAction());
+                this.setMemorizedAction(firstNode.getBestSon().getAction());
             }
         }
 
