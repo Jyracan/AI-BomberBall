@@ -15,7 +15,9 @@ public class FirstAI extends AbstractAI{
 
 
     private LinkedList<Node> OPEN = new LinkedList<Node>();
-    private LinkedList<Node> CLOSE = new LinkedList<Node>();
+    private static  Node firstNode;
+    private static  Node nextNode=null;
+    private static LinkedList<Node> CLOSE = new LinkedList<Node>();
 
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
@@ -26,7 +28,11 @@ public class FirstAI extends AbstractAI{
     public Action choosedAction(GameState gameState) {
         System.out.println("Le joueur FirstIA joue ...");
         double score;
-        Node firstNode = new Node(gameState);
+        if(nextNode != null){
+            firstNode = nextNode;
+        }else{
+            firstNode = new Node(gameState);
+        }
         OPEN.push(firstNode);
         Node tmpNode;
 
@@ -34,17 +40,18 @@ public class FirstAI extends AbstractAI{
         System.out.println("A la recherche du meilleur coup");
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
+            System.out.println("Examen de "+ tmpNode.getAction());
             score = calculScore(tmpNode);
-            if(tmpNode.update(score)){ // is true if
-                // Les valeurs de alpha et beta ce sont croisé, on peut supprimer les autres fils.
+            System.out.println("Examen de "+ tmpNode.getAction() + " score associé : "+ score);
+            if(tmpNode.update(score)){ // est vraie si les valeurs de alpha et beta ce sont croisé, on peut supprimer les autres fils.
                 Node nodeTofind=tmpNode.getFather();
-                for(int i=0; i<OPEN.size();i++) {
-                    if (OPEN.get(i).getFather() == nodeTofind) OPEN.remove(i);
+                for (Node nodeIt: OPEN) {
+                    if (nodeIt.getFather() == nodeTofind) OPEN.remove(nodeIt);
                 }
+                nextNode = firstNode.getBestSon();
+                System.out.println("On mémorise l'action : " + nextNode.getAction());
+                this.setMemorizedAction(nextNode.getAction());
             }
-            remplirOpen(tmpNode);
-            CLOSE.push(tmpNode);
-            this.setMemorizedAction(firstNode.getBestSon().getAction());
         }
 
         System.out.println("L'ia a pu terminer son calcul ! " );
@@ -59,9 +66,8 @@ public class FirstAI extends AbstractAI{
     private void remplirOpen(Node node){
         List<Action> listAction = node.getState().getAllPossibleActions();
         for (Action a : listAction) {
-            if(a == Action.ENDTURN){
-                OPEN.push(new Node(a, node)); // Indiquer le next player ?
-            }
+            //System.out.println("Ajout de " + a);
+            OPEN.addLast(new Node(a, node));
         }
     }
 
@@ -72,13 +78,20 @@ public class FirstAI extends AbstractAI{
      */
     private double calculScore(Node n){
         if(isTerminal(n.getState())){
+            System.out.println("Utilité action " + n.getAction());
             return utilite(n.getState());
-        }else return heuristique(n);
+        }else {
+            remplirOpen(n);
+            CLOSE.push(n);
+            return heuristique(n);
+        }
+
     }
 
     public double heuristique(Node n) {
-
-        return 0;
+        double res = nbCaisseDetruite (n);
+        if(!n.isMax()) res= - res;
+        return res;
     }
 
     /**
@@ -169,12 +182,16 @@ public class FirstAI extends AbstractAI{
      * @return true if it's the end of the game
      */
     private boolean isTerminal (GameState n){
-        boolean jCourantMort =true;
-        for (Player p: n.getPlayers()) {
-            // If our player isn't in the remaining player it's the end for him ...
-            if(p.getPlayerId() == this.getPlayerId()) jCourantMort =false;
-        }
-        return n.gameIsOver() || !jCourantMort;
+//        boolean weAreDead = true;
+//        for (Player p: n.getPlayers()) {
+//          // If our player isn't in the remaining player it's the end for him ...
+//            if(p.getPlayerId() == this.getPlayerId()) {
+//                weAreDead = !(p.isAlive());
+//            }
+//        }
+//        if(weAreDead) System.out.println("On est mort! :D");
+
+        return n.gameIsOver();
     }
 
     /**

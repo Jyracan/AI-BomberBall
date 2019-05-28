@@ -46,8 +46,7 @@ public class Node {
     public boolean equals(Node node){
         boolean res = true;
         if(this.action != node.getAction()) res = false;
-
-        if(node.getState().getMaze().toString() == this.getState().getMaze().toString()) res = true; // On utilise le fait que la méthode toString renvoit un JSON pour comparer les deux labyrinthes
+        if(node.getState().getMaze().toString().equals(this.getState().getMaze().toString())) res = true; // On utilise le fait que la méthode toString renvoit un JSON pour comparer les deux labyrinthes
 
         return res;
     }
@@ -58,12 +57,27 @@ public class Node {
      */
     public boolean update(double score){
         boolean res = false;
-        if(this.isMax()) this.alpha = score;
-        else this.beta = score;
-        if(alpha>beta) res = true;
-        if(this.father != null){
-            this.father.update(score);
-            this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
+        if(this.isMax()){
+            this.alpha = score;
+            if(alpha>beta) {
+                res = true;
+                if(this.father != null){
+                    this.father.update(score);
+                    this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
+                }
+            }
+
+        }
+        else{
+            this.beta = score;
+            if(alpha>beta) {
+                res = true;
+                if(this.father != null){
+                    this.father.update(score);
+                    this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
+                }
+            }
+
         }
 
         return res;
