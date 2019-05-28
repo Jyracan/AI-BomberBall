@@ -89,7 +89,7 @@ public class FirstAI extends AbstractAI{
     }
 
     public double heuristique(Node n) {
-        double res = 0.1;
+        double res = nbCaisseDetruite(n, 0.03);
         if(!n.isMax()) res= - res;
         return res;
     }
@@ -98,7 +98,7 @@ public class FirstAI extends AbstractAI{
      * @param n Node
      * @return a float between 0 and 1 proportional to the number of crates destroyed
      */
-    public static double nbCaisseDetruite (Node n){
+    public static double nbCaisseDetruite (Node n, double poids){
         double score = 0;
         Maze m = n.getState().getMaze();
         for (int i=0;i<m.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
@@ -117,7 +117,7 @@ public class FirstAI extends AbstractAI{
                     //HAUT
                     cond = false;
                     int c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && j+c<m.getHeight()) {
                         objects = m.getCellAt(i,j+c).getGameObjects();
                         c++;
                         it = 0;
@@ -127,11 +127,11 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+0.03;};
+                    if (cond){score=score+poids;};
                     //BAS
                     cond = false;
                     c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && j-c>=0) {
                         objects = m.getCellAt(i,j-c).getGameObjects();
                         c++;
                         it = 0;
@@ -141,11 +141,11 @@ public class FirstAI extends AbstractAI{
                             }else{it++;}
                         }
                     }
-                    if (cond){score=score+0.03;}
+                    if (cond){score=score+poids;}
                     //DROITE
                     cond = false;
                     c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && i+c<m.getWidth()) {
                         objects = m.getCellAt(i+c,j).getGameObjects();
                         c++;
                         it = 0;
@@ -155,11 +155,11 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+0.03;};
+                    if (cond){score=score+poids;};
                     //GAUCHE
                     cond = false;
                     c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && i-c>=0) {
                         objects = m.getCellAt(i-c,j).getGameObjects();
                         c++;
                         it = 0;
@@ -169,7 +169,7 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+0.03;}
+                    if (cond){score=score+poids;}
                 }
             }
         }
@@ -202,6 +202,7 @@ public class FirstAI extends AbstractAI{
      */
     private double utilite (GameState n){
         if(n.getWinner().getPlayerId() == this.getPlayerId()) return 1;
+
         else return -1;
     }
 }
