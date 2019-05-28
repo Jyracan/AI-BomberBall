@@ -6,20 +6,15 @@ import com.glhf.bomberball.config.GameConfig;
 import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.utils.Action;
-import org.lwjgl.Sys;
-import sun.rmi.server.Activation$ActivationSystemImpl_Stub;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 public class FirstAI extends AbstractAI{
 
 
     private LinkedList<Node> OPEN = new LinkedList<Node>();
-    private static  Node firstNode;
     private static  Node nextNode=null;
-    private static LinkedList<Node> CLOSE = new LinkedList<Node>();
 
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
@@ -30,28 +25,28 @@ public class FirstAI extends AbstractAI{
     public Action choosedAction(GameState gameState) {
         System.out.println("Le joueur FirstIA joue ...");
         double score;
+        Node firstNode;
         if(nextNode != null){
             firstNode = nextNode;
+            firstNode.setFather(null);
         }else{
             firstNode = new Node(gameState);
         }
-        OPEN.push(firstNode);
+        remplirOpen(firstNode);
         Node tmpNode;
 
 
         System.out.println("A la recherche du meilleur coup");
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
-//            System.out.println("Examen de "+ tmpNode.getAction());
             score = calculScore(tmpNode);
-//            System.out.println("Examen de "+ tmpNode.getAction() + " score associé : "+ score);
-            if(tmpNode.update(score)){ // est vraie si les valeurs de alpha et beta ce sont croisé, on peut supprimer les autres fils.
-                Node nodeTofind=tmpNode.getFather();
-                for (Node nodeIt: OPEN) {
-                    if (nodeIt.getFather() == nodeTofind) OPEN.remove(nodeIt);
-                }
+            if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
+//                Node nodeTofind=tmpNode.getFather();
+//                for (Node nodeIt: OPEN) {   // Un peu d'élagage
+//                    if (nodeIt.getFather() == nodeTofind) OPEN.remove(nodeIt);
+//                }
                 nextNode = firstNode.getBestSon();
-                System.out.println("On mémorise l'action : " + nextNode.getAction());
+//                System.out.println("On mémorise l'action : " + nextNode.getAction());
                 this.setMemorizedAction(nextNode.getAction());
             }
         }
@@ -66,11 +61,7 @@ public class FirstAI extends AbstractAI{
      * @param node The node we previously evaluate
      */
     private void remplirOpen(Node node){
-        List<Action> listAction = node.getState().getAllPossibleActions();
-        for (Action a : listAction) {
-            //System.out.println("Ajout de " + a);
-            OPEN.addLast(new Node(a, node));
-        }
+        for (Action a : node.getState().getAllPossibleActions()) OPEN.addLast(new Node(a, node));
     }
 
     /**
@@ -80,18 +71,18 @@ public class FirstAI extends AbstractAI{
      */
     private double calculScore(Node n){
         if(isTerminal(n.getState())){
-            System.out.println("Utilité action " + n.getAction());
             return utilite(n.getState());
         }else {
             remplirOpen(n);
-            CLOSE.push(n);
             return heuristique(n);
         }
 
     }
 
     public double heuristique(Node n) {
-        double res = 0.1;
+        double res;
+        //res = nbCaisseDetruite (n,0.03);
+        res = 0.1;
         if(!n.isMax()) res= - res;
         return res;
     }
@@ -100,7 +91,7 @@ public class FirstAI extends AbstractAI{
      * @param n Node
      * @return a float between 0 and 1 proportional to the number of crates destroyed
      */
-    public static double nbCaisseDetruite (Node n){
+    public static double nbCaisseDetruite (Node n, double poids){
         double score = 0;
         Maze m = n.getState().getMaze();
         for (int i=0;i<m.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
@@ -119,7 +110,7 @@ public class FirstAI extends AbstractAI{
                     //HAUT
                     cond = false;
                     int c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && j+c<m.getHeight()) {
                         objects = m.getCellAt(i,j+c).getGameObjects();
                         c++;
                         it = 0;
@@ -129,11 +120,11 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+0.03;};
+                    if (cond){score=score+poids;};
                     //BAS
                     cond = false;
                     c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && j-c>=0) {
                         objects = m.getCellAt(i,j-c).getGameObjects();
                         c++;
                         it = 0;
@@ -143,11 +134,11 @@ public class FirstAI extends AbstractAI{
                             }else{it++;}
                         }
                     }
-                    if (cond){score=score+0.03;}
+                    if (cond){score=score+poids;}
                     //DROITE
                     cond = false;
                     c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && i+c<m.getWidth()) {
                         objects = m.getCellAt(i+c,j).getGameObjects();
                         c++;
                         it = 0;
@@ -157,11 +148,11 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+0.03;};
+                    if (cond){score=score+poids;};
                     //GAUCHE
                     cond = false;
                     c=1;
-                    while (c<range && !cond) {
+                    while (c<range && !cond && i-c>=0) {
                         objects = m.getCellAt(i-c,j).getGameObjects();
                         c++;
                         it = 0;
@@ -171,7 +162,7 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+0.03;}
+                    if (cond){score=score+poids;}
                 }
             }
         }

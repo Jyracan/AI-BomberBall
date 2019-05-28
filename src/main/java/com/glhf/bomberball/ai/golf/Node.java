@@ -2,6 +2,7 @@ package com.glhf.bomberball.ai.golf;
 
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.utils.Action;
+import org.lwjgl.Sys;
 
 public class Node {
     private Action action;
@@ -54,33 +55,28 @@ public class Node {
     /**
      * Function to update the node
      * @param score
+     * @return majPossible boolean to indicate if it's possible to update the other node
      */
     public boolean update(double score){
-        boolean res = false;
-        if(this.isMax()){
+//        if(father ==null) System.out.println("Mis à jour du noeud FIRST " + this.getBestSon().getAction());
+        boolean majPossible = false;
+        if(this.isMax()) if(score > this.alpha){
             this.alpha = score;
-            if(alpha>beta) {
-                res = true;
-                if(this.father != null){
-                    this.father.update(score);
-                    this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
-                }
-            }
-
+            majPossible = true;
         }
-        else{
-            this.beta = score;
-            if(alpha>beta) {
-                res = true;
-                if(this.father != null){
-                    this.father.update(score);
-                    this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
-                }
-            }
-
+        else if(score < this.beta)this.beta = score;
+        if(alpha>beta) {
+//            System.out.println("Croisement de alpha et beta");
+            majPossible = true;
+        }
+//        System.out.println("alpha : " + alpha + " beta : " + beta);
+        if(majPossible && this.father != null){
+//                System.out.println("maj possible !");
+                this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
+                this.father.update(score);
         }
 
-        return res;
+        return majPossible;
     }
 
     /**
@@ -100,6 +96,10 @@ public class Node {
 
     public Node getFather() {
         return father;
+    }
+
+    public void setFather(Node father) {
+        this.father = father;
     }
 
     public Node getBestSon(){
