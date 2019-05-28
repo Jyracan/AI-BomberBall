@@ -6,6 +6,8 @@ import com.glhf.bomberball.config.GameConfig;
 import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.utils.Action;
+import org.lwjgl.Sys;
+import sun.rmi.server.Activation$ActivationSystemImpl_Stub;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -40,9 +42,9 @@ public class FirstAI extends AbstractAI{
         System.out.println("A la recherche du meilleur coup");
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
-            System.out.println("Examen de "+ tmpNode.getAction());
+//            System.out.println("Examen de "+ tmpNode.getAction());
             score = calculScore(tmpNode);
-            System.out.println("Examen de "+ tmpNode.getAction() + " score associé : "+ score);
+//            System.out.println("Examen de "+ tmpNode.getAction() + " score associé : "+ score);
             if(tmpNode.update(score)){ // est vraie si les valeurs de alpha et beta ce sont croisé, on peut supprimer les autres fils.
                 Node nodeTofind=tmpNode.getFather();
                 for (Node nodeIt: OPEN) {
@@ -201,7 +203,8 @@ public class FirstAI extends AbstractAI{
      * @return the score : 1 is a win for you, -1 for your opponent  and 0 for a draw
      */
     private double utilite (GameState n){
-        if(n.getWinner().getPlayerId() == this.getPlayerId()) return 1;
+        if(n.getWinner() == null) return 0; // Cas d'égalité
+        else if(n.getWinner().getPlayerId() == this.getPlayerId()) return 1;
         else return -1;
     }
 }
