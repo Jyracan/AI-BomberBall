@@ -89,7 +89,7 @@ public class FirstAI extends AbstractAI{
     }
 
     public double heuristique(Node n) {
-        double res = nbCaisseDetruite (n);
+        double res = 0.1;
         if(!n.isMax()) res= - res;
         return res;
     }
@@ -101,10 +101,11 @@ public class FirstAI extends AbstractAI{
     public static double nbCaisseDetruite (Node n){
         double score = 0;
         Maze m = n.getState().getMaze();
-        for (int i=0;i<=m.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
+        for (int i=0;i<m.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
             for (int j=0;j<m.getHeight();j++){
                 boolean cond = false;
                 int it = 0;
+//                System.out.println(i + " "+ j);
                 ArrayList<GameObject> objects = m.getCellAt(i,j).getGameObjects();
                 while (!cond && it<objects.size()){
                     if (objects.get(it) instanceof Bomb){    //verifier si la case contient une bombe
@@ -182,6 +183,7 @@ public class FirstAI extends AbstractAI{
      * @return true if it's the end of the game
      */
     private boolean isTerminal (GameState n){
+        //TODO : Il faut faire attention à ce que notre joueur soit toujours en vie
 //        boolean weAreDead = true;
 //        for (Player p: n.getPlayers()) {
 //          // If our player isn't in the remaining player it's the end for him ...
@@ -190,7 +192,6 @@ public class FirstAI extends AbstractAI{
 //            }
 //        }
 //        if(weAreDead) System.out.println("On est mort! :D");
-
         return n.gameIsOver();
     }
 
