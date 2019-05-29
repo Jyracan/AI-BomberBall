@@ -7,6 +7,7 @@ import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
+import org.lwjgl.Sys;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -34,7 +35,7 @@ public class FirstAI extends AbstractAI{
         System.out.println("Le joueur FirstIA joue ...");
         double score;
         Node firstNode;
-        firstNode = new Node(gameState);
+        firstNode = new Node(gameState, this.getPlayerId());
         remplirOpen(firstNode);
         Node tmpNode;
 
@@ -42,6 +43,7 @@ public class FirstAI extends AbstractAI{
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
             score = calculScore(tmpNode);
+            System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
             if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
                 this.setMemorizedAction(firstNode.getBestSon().getAction());
             }
@@ -102,22 +104,22 @@ public class FirstAI extends AbstractAI{
                     //HAUT
                     for(int c = 1;(c<range && cellScore==0 && j+c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j+c));
-                        if(score != -5) score += cellScore;
+                        if(cellScore != -5) score += cellScore;
                     }
                     //BAS
                     for(int c = 1;(c<range && cellScore==0 && j-c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j-c));
-                        if(score != -5) score += cellScore;
+                        if(cellScore != -5) score += cellScore;
                     }
                     //DROITE
                     for(int c = 1;(c<range && cellScore==0 && i+c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i+c,j));
-                        if(score != -5) score += cellScore;
+                        if(cellScore != -5) score += cellScore;
                     }
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j));
-                        if(score != -5) score += cellScore;
+                        if(cellScore != -5) score += cellScore;
                     }
                 }
             }
@@ -138,7 +140,8 @@ public class FirstAI extends AbstractAI{
             } else if (object instanceof Bonus) {
                 score += this.BONUS_DESTROYED;
             } else if (object instanceof Player) {
-                score = - this.PLAYER_KILLED;            }
+                score = - this.PLAYER_KILLED;
+            }
         }
         return score;
     }

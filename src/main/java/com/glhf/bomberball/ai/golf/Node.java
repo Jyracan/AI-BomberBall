@@ -3,6 +3,7 @@ package com.glhf.bomberball.ai.golf;
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.utils.Action;
 import org.lwjgl.Sys;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 public class Node {
     private Action action;
@@ -18,14 +19,14 @@ public class Node {
      * Use this constr to create the first node
      * @param state
      */
-    public Node(GameState state){
+    public Node(GameState state, int idPlayer){
         this.father =null;
         this.action =null;
         this.state = state.clone();
-        this.idPlayer = state.getCurrentPlayerId();
+        this.idPlayer = idPlayer;
         this.alpha = -1;
         this.beta = 1;
-        this.max=true;
+        this.max=(idPlayer == state.getCurrentPlayerId());
     }
 
     /**
@@ -37,11 +38,12 @@ public class Node {
         this.father = father;
         this.action = action;
         GameState newState = father.getState().clone();
+        this.idPlayer = father.idPlayer;
         max = (newState.getCurrentPlayerId() == this.idPlayer);
         newState.apply(action);
         this.state = newState;
-        this.alpha = father.alpha;
-        this.beta = father.beta;
+        this.alpha = father.getAlpha();
+        this.beta = father.getBeta();
     }
 
     public boolean equals(Node node){
@@ -59,15 +61,19 @@ public class Node {
      */
     public boolean update(double score){
         boolean majPossible = false;
-        if(this.isMax()) if(score > this.alpha){
-            if(this.getFather() == null) System.out.println("Action : " + this.getBestSon().getAction() + "score =" + score + " alpha : " +alpha);
-            this.alpha = score;
-            majPossible = true;
+        System.out.println("Update " + score + " alpha " + alpha + " max : " + this.isMax());
+        if(this.isMax()) {
+            System.out.println("Noeud Max !!! :D");
+            if (score > this.alpha) {
+                if (this.getFather() == null) System.out.println("Action : " + this.getBestSon().getAction() + "score =" + score + " alpha : " + alpha);
+                this.alpha = score;
+                majPossible = true;
+            }
+        }else if(score < this.beta) {
+            System.out.println("Noeud min");
+            this.beta = score;
         }
-        else if(score < this.beta) this.beta = score;
-//        if(alpha>=beta) {
-//            majPossible = true;
-//        }
+
         if(majPossible && this.father != null){
                 if(this.father.getAlpha() < this.alpha) {
                     this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
