@@ -60,16 +60,19 @@ public class Node {
     public boolean update(double score){
         boolean majPossible = false;
         if(this.isMax()) if(score > this.alpha){
+            if(this.getFather() == null) System.out.println("Action : " + this.getBestSon().getAction() + "score =" + score + " alpha : " +alpha);
             this.alpha = score;
             majPossible = true;
         }
         else if(score < this.beta) this.beta = score;
-//        if(alpha>beta) {
+//        if(alpha>=beta) {
 //            majPossible = true;
 //        }
         if(majPossible && this.father != null){
-                this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
-                this.father.update(score);
+                if(this.father.getAlpha() < this.alpha) {
+                    this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
+                    this.father.update(score);
+                }
         }
         return majPossible;
     }
@@ -93,16 +96,20 @@ public class Node {
         return father;
     }
 
-    public void setFather(Node father) {
-        this.father = father;
-    }
-
     public Node getBestSon(){
         return bestSon;
     }
 
     public void setBestSon(Node bestSon) {
-        if(this.getFather() == null) System.out.println("New best action " + bestSon.getAction() + " score associé : " + bestSon.alpha);
+//        if(this.getFather() == null) System.out.println("New best action " + this.getBestSon().getAction() + " score associé : " + bestSon.alpha);
         this.bestSon = bestSon;
+    }
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public double getBeta() {
+        return beta;
     }
 }

@@ -15,6 +15,7 @@ public class FirstAI extends AbstractAI{
 
 
     private LinkedList<Node> OPEN;
+
     private final double BOX_DESTROYED = 0.1;
     private final double BONUS_BOX_DESTROYED = 0.2;
     private final double BONUS_TAKEN = 0.3;
@@ -126,7 +127,6 @@ public class FirstAI extends AbstractAI{
 
     private double scoreOfTheCell(Cell cell){
         double score = 0;
-        boolean mort = false;
         ArrayList<GameObject> objects = cell.getGameObjects();
         for (GameObject object : objects) { // Checking every item on the cell
             if(object instanceof IndestructibleWall){
