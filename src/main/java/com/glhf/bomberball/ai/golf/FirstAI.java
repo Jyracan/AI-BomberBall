@@ -5,6 +5,7 @@ import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.config.GameConfig;
 import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
+import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
 
 import java.util.ArrayList;
@@ -17,12 +18,13 @@ public class FirstAI extends AbstractAI{
     private final double BOX_DESTROYED = 0.1;
     private final double BONUS_BOX_DESTROYED = 0.2;
     private final double BONUS_TAKEN = 0.3;
+    private final double BONUS_DESTROYED = -0.3;
     private final double PLAYER_KILLED = 1;
 
 
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
-        super(config,"elf_m","FirstAi",playerId);
+        super(config,"necromancer","FirstAi",playerId);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class FirstAI extends AbstractAI{
     }
 
     /**
-     * A method used to calcul the score, return an heuristique if it's not the end, return the utility otherwise
+     * A method used to calcul the score, return an heuristique if it's not the end, otherwise return the utility
      * @param n the node to evaluate
      * @return a score between -1 and 1
      */
@@ -73,94 +75,77 @@ public class FirstAI extends AbstractAI{
     }
 
     public double heuristique(Node n) {
-        double res;
-        res = nbCaisseDetruite (n);
-        if(!n.isMax()) res= - res;
-        return res;
+        double score;
+        score = scoreDueToBomb(n);
+        if(!n.isMax()) score= - score;
+        return score;
     }
 
     /**
      * @param n Node
      * @return a float between 0 and 1 proportional to the number of crates destroyed
      */
-    private double nbCaisseDetruite(Node n){
-        double score = 0;
-        Maze m = n.getState().getMaze();
-        for (int i=0;i<m.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
-            for (int j=0;j<m.getHeight();j++){
-                boolean cond = false;
-                int it = 0;
+    private double scoreDueToBomb(Node n){
+        double score = 0;   // Le score que nous allons renvoyer
+        double cellScore = 0;    // Le score associé à une cellule qui se trouve dans la range d'une bombe
+        Maze maze = n.getState().getMaze();
+        // TODO : es-ce vraiment necessaire de parcourir tout le labyrinthe peut être un peu trop gros ...
+        for (int i=0;i<maze.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
+            for (int j=0;j<maze.getHeight();j++){
+                boolean bombFind = false;
 //                System.out.println(i + " "+ j);
-                ArrayList<GameObject> objects = m.getCellAt(i,j).getGameObjects();
-                while (!cond && it<objects.size()){
-                    if (objects.get(it) instanceof Bomb){    //verifier si la case contient une bombe
-                        cond = true;
-                    }else it++;
-                }
-                if (cond){  //si elle contient une bombe    //si la case contient une bombe
+                ArrayList<GameObject> objects = maze.getCellAt(i,j).getGameObjects();
+                // Boucle permettant de vérifier si il y a une bombe sur la case
+                for(int iterateur = 0; iterateur<objects.size() && !bombFind; iterateur++) bombFind = (objects.get(iterateur) instanceof Bomb);
+                if (bombFind){ //si la case contient une bombe
                     int range = n.getState().getCurrentPlayer().getBombRange(); //on recupere la range de la bombe
                     //HAUT
-                    cond = false;
-                    int c=1;
-                    while (c<range && !cond && j+c<m.getHeight()) {
-                        objects = m.getCellAt(i,j+c).getGameObjects();
-                        c++;
-                        it = 0;
-                        while (!cond && it<objects.size()){
-                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
-                                cond = true;
-                            }else it++;
-                        }
+                    for(int c = 1;(c<range && cellScore==0 && j+c<maze.getHeight()); c++ ){
+                        cellScore = scoreOfTheCell(maze.getCellAt(i,j+c));
+                        score += cellScore;
                     }
-                    if (cond){score=score+ this.BOX_DESTROYED;}
                     //BAS
-                    cond = false;
-                    c=1;
-                    while (c<range && !cond && j-c>=0) {
-                        objects = m.getCellAt(i,j-c).getGameObjects();
-                        c++;
-                        it = 0;
-                        while (!cond && it<objects.size()){
-                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
-                                cond = true;
-                            }else{it++;}
-                        }
+                    for(int c = 1;(c<range && cellScore==0 && j-c<maze.getHeight()); c++ ){
+                        cellScore = scoreOfTheCell(maze.getCellAt(i,j-c));
+                        score += cellScore;
                     }
-                    if (cond){score=score+this.BOX_DESTROYED;}
                     //DROITE
-                    cond = false;
-                    c=1;
-                    while (c<range && !cond && i+c<m.getWidth()) {
-                        objects = m.getCellAt(i+c,j).getGameObjects();
-                        c++;
-                        it = 0;
-                        while (!cond && it<objects.size()){
-                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
-                                cond = true;
-                            }else it++;
-                        }
+                    for(int c = 1;(c<range && cellScore==0 && i+c<maze.getHeight()); c++ ){
+                        cellScore = scoreOfTheCell(maze.getCellAt(i+c,j));
+                        score += cellScore;
                     }
-                    if (cond){score=score+this.BOX_DESTROYED;};
                     //GAUCHE
-                    cond = false;
-                    c=1;
-                    while (c<range && !cond && i-c>=0) {
-                        objects = m.getCellAt(i-c,j).getGameObjects();
-                        c++;
-                        it = 0;
-                        while (!cond && it<objects.size()){
-                            if (objects.get(it) instanceof DestructibleWall){    //verifier si la case contient une bombe
-                                cond = true;
-                            }else it++;
-                        }
+                    for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
+                        cellScore = scoreOfTheCell(maze.getCellAt(i-c,j));
+                        score += cellScore;
                     }
-                    if (cond){score=score+this.BOX_DESTROYED;}
                 }
             }
         }
         return score;
     }
 
+    private double scoreOfTheCell(Cell cell){
+        double score = 0;
+        boolean mort = false;
+        ArrayList<GameObject> objects = cell.getGameObjects();
+        for(int it = 0; it<objects.size(); it ++){ // Checking every item on the cell
+            if (objects.get(it) instanceof DestructibleWall){
+                score+= this.BOX_DESTROYED;
+            }
+            else if (objects.get(it) instanceof BonusWall){
+                score+= this.BONUS_BOX_DESTROYED;
+            }
+            else if (objects.get(it) instanceof Bonus){
+                score+= this.BONUS_DESTROYED;
+            }
+            else if (objects.get(it) instanceof Player){
+                mort = (objects.get(it).getX() == this.getX() && objects.get(it).getY() == this.getY());
+            }
+        }
+        if(mort) score = - this.PLAYER_KILLED;
+        return score;
+    }
 
     /**
      * Say if the state correspond to the end of a game

@@ -64,7 +64,7 @@ public class Node {
             this.alpha = score;
             majPossible = true;
         }
-        else if(score < this.beta)this.beta = score;
+        else if(score < this.beta) this.beta = score;
 //        if(alpha>beta) {
 //            majPossible = true;
 //        }
