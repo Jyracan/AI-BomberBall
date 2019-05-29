@@ -58,7 +58,6 @@ public class Node {
      * @return majPossible boolean to indicate if it's possible to update the other node
      */
     public boolean update(double score){
-//        if(father ==null) System.out.println("Mis à jour du noeud FIRST " + this.getBestSon().getAction());
         boolean majPossible = false;
         if(this.isMax()) if(score > this.alpha){
             this.alpha = score;
@@ -68,13 +67,10 @@ public class Node {
 //        if(alpha>beta) {
 //            majPossible = true;
 //        }
-//        System.out.println("alpha : " + alpha + " beta : " + beta);
         if(majPossible && this.father != null){
-//                System.out.println("maj possible !");
                 this.father.setBestSon(this); // On dit à notre père qu'on est son meilleur fils
                 this.father.update(score);
         }
-
         return majPossible;
     }
 

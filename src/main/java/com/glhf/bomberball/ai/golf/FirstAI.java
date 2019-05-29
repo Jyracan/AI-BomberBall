@@ -37,7 +37,6 @@ public class FirstAI extends AbstractAI{
         remplirOpen(firstNode);
         Node tmpNode;
 
-
         System.out.println("A la recherche du meilleur coup");
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
@@ -74,7 +73,7 @@ public class FirstAI extends AbstractAI{
 
     }
 
-    public double heuristique(Node n) {
+    private double heuristique(Node n) {
         double score;
         score = scoreDueToBomb(n);
         if(!n.isMax()) score= - score;
@@ -102,22 +101,22 @@ public class FirstAI extends AbstractAI{
                     //HAUT
                     for(int c = 1;(c<range && cellScore==0 && j+c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j+c));
-                        score += cellScore;
+                        if(score != -5) score += cellScore;
                     }
                     //BAS
                     for(int c = 1;(c<range && cellScore==0 && j-c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j-c));
-                        score += cellScore;
+                        if(score != -5) score += cellScore;
                     }
                     //DROITE
                     for(int c = 1;(c<range && cellScore==0 && i+c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i+c,j));
-                        score += cellScore;
+                        if(score != -5) score += cellScore;
                     }
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j));
-                        score += cellScore;
+                        if(score != -5) score += cellScore;
                     }
                 }
             }
@@ -129,21 +128,18 @@ public class FirstAI extends AbstractAI{
         double score = 0;
         boolean mort = false;
         ArrayList<GameObject> objects = cell.getGameObjects();
-        for(int it = 0; it<objects.size(); it ++){ // Checking every item on the cell
-            if (objects.get(it) instanceof DestructibleWall){
-                score+= this.BOX_DESTROYED;
-            }
-            else if (objects.get(it) instanceof BonusWall){
-                score+= this.BONUS_BOX_DESTROYED;
-            }
-            else if (objects.get(it) instanceof Bonus){
-                score+= this.BONUS_DESTROYED;
-            }
-            else if (objects.get(it) instanceof Player){
-                mort = (objects.get(it).getX() == this.getX() && objects.get(it).getY() == this.getY());
-            }
+        for (GameObject object : objects) { // Checking every item on the cell
+            if(object instanceof IndestructibleWall){
+                score = -5;
+            }else if (object instanceof BonusWall) {
+                score += this.BONUS_BOX_DESTROYED;
+            } else if (object instanceof DestructibleWall) {
+                score += this.BOX_DESTROYED;
+            } else if (object instanceof Bonus) {
+                score += this.BONUS_DESTROYED;
+            } else if (object instanceof Player) {
+                score = - this.PLAYER_KILLED;            }
         }
-        if(mort) score = - this.PLAYER_KILLED;
         return score;
     }
 
@@ -154,14 +150,6 @@ public class FirstAI extends AbstractAI{
      */
     private boolean isTerminal (GameState n){
         //TODO : Il faut faire attention à ce que notre joueur soit toujours en vie
-//        boolean weAreDead = true;
-//        for (Player p: n.getPlayers()) {
-//          // If our player isn't in the remaining player it's the end for him ...
-//            if(p.getPlayerId() == this.getPlayerId()) {
-//                weAreDead = !(p.isAlive());
-//            }
-//        }
-//        if(weAreDead) System.out.println("On est mort! :D");
         return n.gameIsOver();
     }
 
