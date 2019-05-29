@@ -65,10 +65,9 @@ public class Node {
             majPossible = true;
         }
         else if(score < this.beta)this.beta = score;
-        if(alpha>beta) {
-//            System.out.println("Croisement de alpha et beta");
-            majPossible = true;
-        }
+//        if(alpha>beta) {
+//            majPossible = true;
+//        }
 //        System.out.println("alpha : " + alpha + " beta : " + beta);
         if(majPossible && this.father != null){
 //                System.out.println("maj possible !");
@@ -107,6 +106,7 @@ public class Node {
     }
 
     public void setBestSon(Node bestSon) {
+        if(this.getFather() == null) System.out.println("New best action " + bestSon.getAction() + " score associé : " + bestSon.alpha);
         this.bestSon = bestSon;
     }
 }

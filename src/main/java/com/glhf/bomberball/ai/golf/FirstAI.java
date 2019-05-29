@@ -14,6 +14,11 @@ public class FirstAI extends AbstractAI{
 
 
     private LinkedList<Node> OPEN;
+    private final double BOX_DESTROYED = 0.1;
+    private final double BONUS_BOX_DESTROYED = 0.2;
+    private final double BONUS_TAKEN = 0.3;
+    private final double PLAYER_KILLED = 1;
+
 
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
@@ -69,7 +74,7 @@ public class FirstAI extends AbstractAI{
 
     public double heuristique(Node n) {
         double res;
-        res = nbCaisseDetruite (n,0.03);
+        res = nbCaisseDetruite (n);
         if(!n.isMax()) res= - res;
         return res;
     }
@@ -78,7 +83,7 @@ public class FirstAI extends AbstractAI{
      * @param n Node
      * @return a float between 0 and 1 proportional to the number of crates destroyed
      */
-    public static double nbCaisseDetruite (Node n, double poids){
+    private double nbCaisseDetruite(Node n){
         double score = 0;
         Maze m = n.getState().getMaze();
         for (int i=0;i<m.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
@@ -107,7 +112,7 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+poids;};
+                    if (cond){score=score+ this.BOX_DESTROYED;}
                     //BAS
                     cond = false;
                     c=1;
@@ -121,7 +126,7 @@ public class FirstAI extends AbstractAI{
                             }else{it++;}
                         }
                     }
-                    if (cond){score=score+poids;}
+                    if (cond){score=score+this.BOX_DESTROYED;}
                     //DROITE
                     cond = false;
                     c=1;
@@ -135,7 +140,7 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+poids;};
+                    if (cond){score=score+this.BOX_DESTROYED;};
                     //GAUCHE
                     cond = false;
                     c=1;
@@ -149,11 +154,11 @@ public class FirstAI extends AbstractAI{
                             }else it++;
                         }
                     }
-                    if (cond){score=score+poids;}
+                    if (cond){score=score+this.BOX_DESTROYED;}
                 }
             }
         }
-        return Math.min(score,0.99);
+        return score;
     }
 
 
