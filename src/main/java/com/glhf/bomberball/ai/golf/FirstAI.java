@@ -106,10 +106,27 @@ public class FirstAI extends AbstractAI{
     }
 
     private double heuristique(Node n) {
-        double score;
-        score = scoreDueToBomb(n);
+        double score=0;
+        score += scoreDueToBomb(n);
+        score += bonusGrabbed(n);
         if(!n.isMax()) score= - score;
         return score;
+    }
+
+    /**
+     * @param n Node
+     * @return a float between 0 and 1 proportional to the number of bonus the IA has taken this turn
+    **/
+    private double bonusGrabbed(Node n){
+        int nbBonus = 0;
+        nbBonus += n.getState().getCurrentPlayer().bonus_moves;
+        nbBonus += n.getState().getCurrentPlayer().bonus_bomb_number;
+        nbBonus += n.getState().getCurrentPlayer().bonus_bomb_range;
+        int oldNbBonus = 0;
+        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_moves;
+        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_bomb_number;
+        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_bomb_range;
+        return (nbBonus - oldNbBonus) * this.BONUS_TAKEN;
     }
 
     /**
