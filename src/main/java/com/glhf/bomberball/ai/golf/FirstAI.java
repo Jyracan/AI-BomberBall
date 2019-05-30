@@ -7,7 +7,6 @@ import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
-import org.lwjgl.Sys;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -67,7 +66,7 @@ public class FirstAI extends AbstractAI{
         for (Action a : node.getState().getAllPossibleActions()) {
             if(a != forbiden){
                 OPEN.addLast(new Node(a, node));
-            }
+           }
         }
     }
 
