@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import com.glhf.bomberball.ai.golf.FirstAI;
 import com.glhf.bomberball.ai.golf.OpponentAI;
+import com.glhf.bomberball.ai.golf.alphaBetaProfondeur;
 import com.glhf.bomberball.config.GameMultiConfig;
 import com.glhf.bomberball.maze.cell.Cell;
 
@@ -45,6 +46,11 @@ public class FactoryMethod {
                     AbstractAI player3=new OpponentAI(configMultiPlayers,player_skin,playerId);
                     cell.addGameObject(player3);
                     return player3;
+
+                case "alphaBetaProfondeur":
+                    AbstractAI player4=new alphaBetaProfondeur(configMultiPlayers,player_skin,playerId);
+                    cell.addGameObject(player4);
+                    return player4;
 
                 default:
                     AbstractAI playerDefault=new RandomAI(configMultiPlayers,player_skin,playerId);

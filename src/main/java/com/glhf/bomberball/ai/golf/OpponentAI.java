@@ -61,11 +61,11 @@ public class OpponentAI extends AbstractAI {
          * @param node The node we previously evaluate
          */
         private void remplirOpen(Node node){
-            //Action forbiden = forbiddenAction();
+            Action forbiden = forbiddenAction();
             for (Action a : node.getState().getAllPossibleActions()) {
-                //if(a != forbiden){
+                if(a != forbiden){
                 OPEN.addLast(new Node(a, node));
-                // }
+                }
             }
         }
 
