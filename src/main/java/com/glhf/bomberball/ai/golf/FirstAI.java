@@ -133,25 +133,25 @@ public class FirstAI extends AbstractAI{
                     //HAUT
                     cellScore =0;
                     for(int c = 1;(c<range && cellScore==0 && j+c<maze.getHeight()); c++ ){
-                        cellScore = scoreOfTheCell(maze.getCellAt(i,j+c));
+                        cellScore = scoreOfTheCell(maze.getCellAt(i,j+c), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
                     cellScore =0;
                     //BAS
                     for(int c = 1;(c<range && cellScore==0 && j-c<maze.getHeight()); c++ ){
-                        cellScore = scoreOfTheCell(maze.getCellAt(i,j-c));
+                        cellScore = scoreOfTheCell(maze.getCellAt(i,j-c), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
                     cellScore =0;
                     //DROITE
                     for(int c = 1;(c<range && cellScore==0 && i+c<maze.getHeight()); c++ ){
-                        cellScore = scoreOfTheCell(maze.getCellAt(i+c,j));
+                        cellScore = scoreOfTheCell(maze.getCellAt(i+c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
                     cellScore =0;
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
-                        cellScore = scoreOfTheCell(maze.getCellAt(i-c,j));
+                        cellScore = scoreOfTheCell(maze.getCellAt(i-c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
                 }
@@ -160,7 +160,7 @@ public class FirstAI extends AbstractAI{
         return score;
     }
 
-    private double scoreOfTheCell(Cell cell){
+    private double scoreOfTheCell(Cell cell, Node node){
         double score = 0;
         ArrayList<GameObject> objects = cell.getGameObjects();
         for (GameObject object : objects) { // Checking every item on the cell
@@ -173,8 +173,10 @@ public class FirstAI extends AbstractAI{
             } else if (object instanceof Bonus) {
                 score += this.BONUS_DESTROYED;
             }else if (object instanceof Player) {
-                if(this.getX() == object.getX() && this.getY() == object.getY()){
+                if(node.getState().getCurrentPlayer().getX() == object.getX() && node.getState().getCurrentPlayer().getY() == object.getY()){
                     score -= this.PLAYER_KILLED;
+                }else{
+                    score = this.PLAYER_KILLED;
                 }
             }
         }
