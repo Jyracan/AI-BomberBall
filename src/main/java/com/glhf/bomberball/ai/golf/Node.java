@@ -2,8 +2,6 @@ package com.glhf.bomberball.ai.golf;
 
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.utils.Action;
-import org.lwjgl.Sys;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 public class Node {
     private Action action;
@@ -61,16 +59,14 @@ public class Node {
      */
     public boolean update(double score){
         boolean majPossible = false;
-        System.out.println("Update " + score + " alpha " + alpha + " max : " + this.isMax());
+        //System.out.println("Update " + score + " alpha " + alpha + " max : " + this.isMax());
         if(this.isMax()) {
-            System.out.println("Noeud Max !!! :D");
             if (score > this.alpha) {
                 if (this.getFather() == null) System.out.println("Action : " + this.getBestSon().getAction() + "score =" + score + " alpha : " + alpha);
                 this.alpha = score;
                 majPossible = true;
             }
         }else if(score < this.beta) {
-            System.out.println("Noeud min");
             this.beta = score;
         }
 
@@ -107,7 +103,6 @@ public class Node {
     }
 
     public void setBestSon(Node bestSon) {
-//        if(this.getFather() == null) System.out.println("New best action " + this.getBestSon().getAction() + " score associé : " + bestSon.alpha);
         this.bestSon = bestSon;
     }
 

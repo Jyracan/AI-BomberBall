@@ -16,12 +16,14 @@ public class FirstAI extends AbstractAI{
 
 
     private LinkedList<Node> OPEN;
+    private static Action lastAction = null;
 
     private final double BOX_DESTROYED = 0.1;
     private final double BONUS_BOX_DESTROYED = 0.2;
     private final double BONUS_TAKEN = 0.3;
     private final double BONUS_DESTROYED = -0.3;
     private final double PLAYER_KILLED = 1;
+    private final double WALL = -2;
 
 
 
@@ -43,9 +45,10 @@ public class FirstAI extends AbstractAI{
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
             score = calculScore(tmpNode);
-            System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
+            //System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
             if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
                 this.setMemorizedAction(firstNode.getBestSon().getAction());
+                lastAction = firstNode.getBestSon().getAction();
             }
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
@@ -58,7 +61,33 @@ public class FirstAI extends AbstractAI{
      * @param node The node we previously evaluate
      */
     private void remplirOpen(Node node){
-        for (Action a : node.getState().getAllPossibleActions()) OPEN.addLast(new Node(a, node));
+        Action forbiden = forbiddenAction();
+        for (Action a : node.getState().getAllPossibleActions()) {
+            if(a != forbiden){
+                OPEN.addLast(new Node(a, node));
+            }
+        }
+    }
+
+    /**
+     * Empêche l'IA de revenir sur ses pas
+     * @param
+     * @return Action that is the opposite to the last Action (if it is a Move, else return null)
+     */
+    public Action forbiddenAction (){
+        if(lastAction !=null){
+            switch (lastAction){
+                case MOVE_DOWN:
+                    return Action.MOVE_UP;
+                case MOVE_UP:
+                    return Action.MOVE_DOWN;
+                case MOVE_RIGHT:
+                    return Action.MOVE_LEFT;
+                case MOVE_LEFT:
+                    return Action.MOVE_RIGHT;
+            }
+        }
+        return null;
     }
 
     /**
@@ -89,7 +118,7 @@ public class FirstAI extends AbstractAI{
      */
     private double scoreDueToBomb(Node n){
         double score = 0;   // Le score que nous allons renvoyer
-        double cellScore = 0;    // Le score associé à une cellule qui se trouve dans la range d'une bombe
+        double cellScore;    // Le score associé à une cellule qui se trouve dans la range d'une bombe
         Maze maze = n.getState().getMaze();
         // TODO : es-ce vraiment necessaire de parcourir tout le labyrinthe peut être un peu trop gros ...
         for (int i=0;i<maze.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
@@ -102,24 +131,28 @@ public class FirstAI extends AbstractAI{
                 if (bombFind){ //si la case contient une bombe
                     int range = n.getState().getCurrentPlayer().getBombRange(); //on recupere la range de la bombe
                     //HAUT
+                    cellScore =0;
                     for(int c = 1;(c<range && cellScore==0 && j+c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j+c));
-                        if(cellScore != -5) score += cellScore;
+                        if(cellScore != this.WALL) score += cellScore;
                     }
+                    cellScore =0;
                     //BAS
                     for(int c = 1;(c<range && cellScore==0 && j-c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j-c));
-                        if(cellScore != -5) score += cellScore;
+                        if(cellScore != this.WALL) score += cellScore;
                     }
+                    cellScore =0;
                     //DROITE
                     for(int c = 1;(c<range && cellScore==0 && i+c<maze.getHeight()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i+c,j));
-                        if(cellScore != -5) score += cellScore;
+                        if(cellScore != this.WALL) score += cellScore;
                     }
+                    cellScore =0;
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j));
-                        if(cellScore != -5) score += cellScore;
+                        if(cellScore != this.WALL) score += cellScore;
                     }
                 }
             }
@@ -132,15 +165,17 @@ public class FirstAI extends AbstractAI{
         ArrayList<GameObject> objects = cell.getGameObjects();
         for (GameObject object : objects) { // Checking every item on the cell
             if(object instanceof IndestructibleWall){
-                score = -5;
+                score = this.WALL;
             }else if (object instanceof BonusWall) {
                 score += this.BONUS_BOX_DESTROYED;
             } else if (object instanceof DestructibleWall) {
                 score += this.BOX_DESTROYED;
             } else if (object instanceof Bonus) {
                 score += this.BONUS_DESTROYED;
-            } else if (object instanceof Player) {
-                score = - this.PLAYER_KILLED;
+            }else if (object instanceof Player) {
+                if(this.getX() == object.getX() && this.getY() == object.getY()){
+                    score -= this.PLAYER_KILLED;
+                }
             }
         }
         return score;
