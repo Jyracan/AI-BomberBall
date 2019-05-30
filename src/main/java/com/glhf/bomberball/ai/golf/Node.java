@@ -11,7 +11,7 @@ public class Node {
     private Node bestSon;
     private boolean max;
     private int idPlayer;
-
+    private int depth;
 
     /**
      * Use this constr to create the first node
@@ -25,6 +25,7 @@ public class Node {
         this.alpha = -1;
         this.beta = 1;
         this.max=(idPlayer == state.getCurrentPlayerId());
+        this.depth = 0;
     }
 
     /**
@@ -42,6 +43,7 @@ public class Node {
         this.state = newState;
         this.alpha = father.getAlpha();
         this.beta = father.getBeta();
+        this.depth = this.father.depth + 1;
     }
 
     public boolean equals(Node node){
@@ -112,5 +114,9 @@ public class Node {
 
     public double getBeta() {
         return beta;
+    }
+
+    public int getDepth() {
+        return depth;
     }
 }

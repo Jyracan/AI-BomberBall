@@ -25,8 +25,6 @@ public class FirstAI extends AbstractAI{
     private final double PLAYER_KILLED = 1;
     private final double WALL = -2;
 
-
-
     public FirstAI(GameConfig config, String player_skin, int playerId) {
         super(config,"necromancer","FirstAi",playerId);
     }
@@ -40,10 +38,14 @@ public class FirstAI extends AbstractAI{
         firstNode = new Node(gameState, this.getPlayerId());
         remplirOpen(firstNode);
         Node tmpNode;
-
+        int bestDepth =0;
         System.out.println("A la recherche du meilleur coup");
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
+            if(tmpNode.getDepth() > bestDepth) {
+                bestDepth = tmpNode.getDepth();
+                System.out.println("Nouvelle meilleure profondeure " + bestDepth);
+            }
             score = calculScore(tmpNode);
             //System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
             if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
