@@ -7,6 +7,7 @@ import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
+import org.lwjgl.Sys;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -110,6 +111,7 @@ public class FirstAI extends AbstractAI{
         double score=0;
         score += scoreDueToBomb(n);
         score += bonusGrabbed(n);
+        score += scoreOfTheArround(n);
         if(!n.isMax()) score= - score;
         return score;
     }
@@ -172,6 +174,25 @@ public class FirstAI extends AbstractAI{
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
+                }
+            }
+        }
+        return score;
+    }
+
+    private double scoreOfTheArround(Node n){
+        Maze maze = n.getState().getMaze();
+        double score = 0;
+        ArrayList<GameObject> gameObjects;
+        ArrayList<Cell> adjacentCells = maze.getCellAt(n.getState().getCurrentPlayer().getX(), n.getState().getCurrentPlayer().getY() ).getAdjacentCellsInMaze();
+        for (Cell cell: adjacentCells) {
+            gameObjects = cell.getGameObjects();
+            for (GameObject object:gameObjects) {
+                if (object instanceof BonusWall || object instanceof Bonus) {
+                    System.out.println("On découvre un bonus aux alentours");
+                    score += this.BONUS_TAKEN / 2;
+                }else if(object instanceof Player){
+                    score -= this.PLAYER_KILLED;
                 }
             }
         }
