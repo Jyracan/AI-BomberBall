@@ -1,6 +1,5 @@
 package com.glhf.bomberball.ai.golf;
 
-import com.badlogic.gdx.graphics.Color;
 import com.glhf.bomberball.ai.AbstractAI;
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.config.GameConfig;
@@ -8,7 +7,6 @@ import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
-import com.glhf.bomberball.utils.Directions;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -35,6 +33,7 @@ public class FirstAI extends AbstractAI{
     public Action choosedAction(GameState gameState) {
         OPEN = new LinkedList<Node>();
         System.out.println("Le joueur FirstIA joue ...");
+        this.setMemorizedAction(Action.ENDTURN); // De base on finit notre tour pour éviter de jouer des actions aléatoire si l'o ne trouve pas mieux
         double score;
         Node firstNode;
         firstNode = new Node(gameState, this.getPlayerId());
