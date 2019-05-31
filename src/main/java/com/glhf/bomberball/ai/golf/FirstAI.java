@@ -1,5 +1,6 @@
 package com.glhf.bomberball.ai.golf;
 
+import com.badlogic.gdx.graphics.Color;
 import com.glhf.bomberball.ai.AbstractAI;
 import com.glhf.bomberball.ai.GameState;
 import com.glhf.bomberball.config.GameConfig;
@@ -49,16 +50,17 @@ public class FirstAI extends AbstractAI{
             score = calculScore(tmpNode);
             //System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
             //if (score != BADMOVE){
-                if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
+            if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
+                if(firstNode.getBestSon() != null){
                     lastAction = firstNode.getBestSon().getAction();
-                    System.out.println("Mise à jour de la nouvelle meilleure action : " + lastAction + " score associé : " + score );
+//                        System.out.println("Mise à jour de la nouvelle meilleure action : " + lastAction + " score associé : " + score );
                     this.setMemorizedAction(lastAction);
-
                 }
-                if( !isTerminal(tmpNode.getState())) {
-                    //System.out.println("On remplis OPEN");
-                    remplirOpen(tmpNode);
-                }
+            }
+            if( !isTerminal(tmpNode.getState())) {
+                //System.out.println("On remplis OPEN");
+                remplirOpen(tmpNode);
+            }
             //}else System.out.println("Detection d'un mauvais coup " + tmpNode.getAction());
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
@@ -75,7 +77,7 @@ public class FirstAI extends AbstractAI{
         for (Action a : node.getState().getAllPossibleActions()) {
             if(a != forbiden){
                 OPEN.addLast(new Node(a, node));
-           }
+            }
         }
     }
 
@@ -135,7 +137,7 @@ public class FirstAI extends AbstractAI{
     /**
      * @param n Node
      * @return a float between 0 and 1 proportional to the number of bonus the IA has taken this turn
-    **/
+     **/
     private double bonusGrabbed(Node n){
         int nbBonus = 0;
         nbBonus += n.getState().getCurrentPlayer().bonus_moves;
@@ -175,7 +177,7 @@ public class FirstAI extends AbstractAI{
                     }
                     cellScore =0;
                     //BAS
-                    for(int c = 1;(c<range && cellScore==0 && j-c<maze.getHeight()); c++ ){
+                    for(int c = 1;(c<range && cellScore==0 && j-c>=0); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j-c), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
@@ -188,6 +190,7 @@ public class FirstAI extends AbstractAI{
                     cellScore =0;
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
+
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
@@ -197,19 +200,36 @@ public class FirstAI extends AbstractAI{
         return score;
     }
 
-    // TODO : Faire en sorte qu'on puisse voir un peu plus loin que juste autour du joueur
+    // TODO : Lui dire de se tenir à une case d'espace d'une caisse BONUS pour l'exploser sans perdre une action
     private double scoreOfTheArround(Node n){
+        ArrayList<Cell> adjacentCells;
+        ArrayList<Cell> tmpCells;
         Maze maze = n.getState().getMaze();
         double score = 0;
         ArrayList<GameObject> gameObjects;
-        ArrayList<Cell> adjacentCells = maze.getCellAt(n.getState().getCurrentPlayer().getX(), n.getState().getCurrentPlayer().getY() ).getAdjacentCellsInMaze();
+        adjacentCells = maze.getCellAt(n.getState().getCurrentPlayer().getX(), n.getState().getCurrentPlayer().getY() ).getAdjacentCellsInMaze();
+        int size = adjacentCells.size();
+        for (int i =0; i<size; i++) {
+            if(! adjacentCells.get(i).hasInstanceOf(Wall.class)){
+                tmpCells = adjacentCells.get(i).getAdjacentCellsInMaze();
+                for (Cell tmpCell: tmpCells) {
+                    if(! adjacentCells.contains(tmpCell)){
+                        adjacentCells.add(tmpCell);
+                    }
+                }
+            }
+        }
         for (Cell cell: adjacentCells) {
             gameObjects = cell.getGameObjects();
             for (GameObject object:gameObjects) {
-                if (object instanceof BonusWall || object instanceof Bonus) {
+                if (object instanceof Bonus) {
                     score += this.BONUS_TAKEN / 2;
+                }else if(object instanceof BonusWall ){
+                    score += this.BONUS_BOX_DESTROYED / 2;
                 }else if(object instanceof Player){
-                    score -= this.PLAYER_KILLED;
+                    if(n.getState().getCurrentPlayer().getX() != object.getX() || n.getState().getCurrentPlayer().getY() != object.getY()){
+                        score -= this.PLAYER_KILLED/2;
+                    }
                 }
             }
         }
@@ -218,24 +238,29 @@ public class FirstAI extends AbstractAI{
 
     private double scoreOfTheCell(Cell cell, Node node){
         double score = 0;
-        ArrayList<GameObject> objects = cell.getGameObjects();
-        for (GameObject object : objects) { // Checking every item on the cell
-            if(object instanceof IndestructibleWall){
-                score = this.WALL;
-            }else if (object instanceof BonusWall) {
-                score += this.BONUS_BOX_DESTROYED;
-            } else if (object instanceof DestructibleWall) {
-                score += this.BOX_DESTROYED;
-            } else if (object instanceof Bonus) {
-                score += this.BONUS_DESTROYED;
-            }else if (object instanceof Player) {
-                if(node.getState().getCurrentPlayer().getX() == object.getX() && node.getState().getCurrentPlayer().getY() == object.getY()){
-                    score -= this.PLAYER_KILLED;
-                }else{
-                    score = this.PLAYER_KILLED;
+        if(cell != null){
+            ArrayList<GameObject> objects = cell.getGameObjects();
+            for (GameObject object : objects) { // Checking every item on the cell
+                if(object instanceof IndestructibleWall){
+                    score = this.WALL;
+                }else if (object instanceof BonusWall) {
+                    score += this.BONUS_BOX_DESTROYED;
+                } else if (object instanceof DestructibleWall) {
+                    score += this.BOX_DESTROYED;
+                } else if (object instanceof Bonus) {
+                    score += this.BONUS_DESTROYED;
+                }else if (object instanceof Player) {
+                    if(node.getState().getCurrentPlayer().getX() == object.getX() && node.getState().getCurrentPlayer().getY() == object.getY()){
+                        score -= this.PLAYER_KILLED;
+                    }else{
+                        score = this.PLAYER_KILLED;
+                    }
                 }
             }
+        }else{
+            System.err.println("Attention case vide");
         }
+
         return score;
     }
 
