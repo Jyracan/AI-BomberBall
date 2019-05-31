@@ -19,7 +19,8 @@ public class alphaBetaProfondeur extends AbstractAI{
     private final double PLAYER_KILLED = 1;
     private final double WALL = -2;
 
-    private double maxDepth = 5;
+    private int maxDepth;
+    private int INITIAL_DEPTH = 9;
 
     public alphaBetaProfondeur(GameConfig config, String player_skin, int playerId) {
         super(config,"wogol","alphaBetaProfondeur",playerId);
@@ -34,21 +35,25 @@ public class alphaBetaProfondeur extends AbstractAI{
         GameState tmpState;
         double tmpScore;
         double alpha = -1, beta = 1;
+        maxDepth = INITIAL_DEPTH;
 
         System.out.println("A la recherche du meilleur coup");
         // A loop to find the best action
-        for (Action tmpAction : listAction) {
-            if(alpha >= beta) return this.getMemorizedAction();
-            //System.out.println("Test de l'action x : " + tmpAction.getX() + " y  : " + tmpAction.getY());
-            tmpState = gameState.clone();
-            tmpState.apply(tmpAction);
-            //System.out.println("Nouveau joueur : j" +tmpState.getIdJoueurCourant() );
-            tmpScore = alphaBeta(tmpState, alpha, beta, 1);
-            //System.out.println("Score associé à cette action : "+tmpScore);
-            if(tmpScore>alpha) {
-                alpha=tmpScore;
-                this.setMemorizedAction(tmpAction);
-                System.out.println("Oh ! un meilleur coup a été trouvé " + tmpAction + " score associé : " + tmpScore);
+        while(alpha != 1) {
+            maxDepth ++;
+            for (Action tmpAction : listAction) {
+                if (alpha >= beta) return this.getMemorizedAction();
+                //System.out.println("Test de l'action x : " + tmpAction.getX() + " y  : " + tmpAction.getY());
+                tmpState = gameState.clone();
+                tmpState.apply(tmpAction);
+                //System.out.println("Nouveau joueur : j" +tmpState.getIdJoueurCourant() );
+                tmpScore = alphaBeta(tmpState, alpha, beta, 1);
+                //System.out.println("Score associé à cette action : "+tmpScore);
+                if (tmpScore > alpha) {
+                    alpha = tmpScore;
+                    this.setMemorizedAction(tmpAction);
+                    System.out.println("Oh ! un meilleur coup a été trouvé " + tmpAction + " score associé : " + tmpScore);
+                }
             }
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
