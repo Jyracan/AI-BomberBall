@@ -7,7 +7,6 @@ import com.glhf.bomberball.gameobject.*;
 import com.glhf.bomberball.maze.Maze;
 import com.glhf.bomberball.maze.cell.Cell;
 import com.glhf.bomberball.utils.Action;
-import org.lwjgl.Sys;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -24,6 +23,7 @@ public class FirstAI extends AbstractAI{
     private final double BONUS_DESTROYED = -0.3;
     private final double PLAYER_KILLED = 1;
     private final double WALL = -2;
+    private final double BADMOVE = -2;
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
         super(config,"necromancer","FirstAi",playerId);
@@ -48,10 +48,18 @@ public class FirstAI extends AbstractAI{
             }
             score = calculScore(tmpNode);
             //System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
-            if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
-                this.setMemorizedAction(firstNode.getBestSon().getAction());
-                lastAction = firstNode.getBestSon().getAction();
-            }
+            //if (score != BADMOVE){
+                if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
+                    lastAction = firstNode.getBestSon().getAction();
+                    System.out.println("Mise à jour de la nouvelle meilleure action : " + lastAction + " score associé : " + score );
+                    this.setMemorizedAction(lastAction);
+
+                }
+                if( !isTerminal(tmpNode.getState())) {
+                    //System.out.println("On remplis OPEN");
+                    remplirOpen(tmpNode);
+                }
+            //}else System.out.println("Detection d'un mauvais coup " + tmpNode.getAction());
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
         return this.getMemorizedAction();
@@ -73,7 +81,6 @@ public class FirstAI extends AbstractAI{
 
     /**
      * Empêche l'IA de revenir sur ses pas
-     * @param
      * @return Action that is the opposite to the last Action (if it is a Move, else return null)
      */
     public Action forbiddenAction (){
@@ -101,7 +108,6 @@ public class FirstAI extends AbstractAI{
         if(isTerminal(n.getState())){
             return utilite(n.getState());
         }else {
-            remplirOpen(n);
             return heuristique(n);
         }
 
@@ -110,10 +116,20 @@ public class FirstAI extends AbstractAI{
     private double heuristique(Node n) {
         double score=0;
         score += scoreDueToBomb(n);
-        score += bonusGrabbed(n);
-        score += scoreOfTheArround(n);
-        if(!n.isMax()) score= - score;
+        if(score ==0 && aUtiliseUneBombe(n) ) score = BADMOVE;  //TODO : Mal implémenté fait buguer le player, il ne va plus tuer (décommenter l51 et l62)
+        else{
+            score += bonusGrabbed(n);
+            score += scoreOfTheArround(n);
+            if(!n.isMax()) score= - score;
+        }
         return score;
+    }
+
+    /**
+     * @return If the current player have used a bomb
+     */
+    private boolean aUtiliseUneBombe(Node n){
+        return ((n.getState().getCurrentPlayer().bonus_bomb_number + n.getState().getCurrentPlayer().getNumberBombRemaining()) != 1);
     }
 
     /**
@@ -139,11 +155,12 @@ public class FirstAI extends AbstractAI{
     private double scoreDueToBomb(Node n){
         double score = 0;   // Le score que nous allons renvoyer
         double cellScore;    // Le score associé à une cellule qui se trouve dans la range d'une bombe
+        boolean bombFind;
         Maze maze = n.getState().getMaze();
-        // TODO : es-ce vraiment necessaire de parcourir tout le labyrinthe peut être un peu trop gros ...
+        // TODO : es-ce vraiment necessaire de parcourir tout le labyrinthe peut être un peu trop gros ... Idée d'amélioration ?
         for (int i=0;i<maze.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
             for (int j=0;j<maze.getHeight();j++){
-                boolean bombFind = false;
+                bombFind = false;
 //                System.out.println(i + " "+ j);
                 ArrayList<GameObject> objects = maze.getCellAt(i,j).getGameObjects();
                 // Boucle permettant de vérifier si il y a une bombe sur la case
@@ -180,6 +197,7 @@ public class FirstAI extends AbstractAI{
         return score;
     }
 
+    // TODO : Faire en sorte qu'on puisse voir un peu plus loin que juste autour du joueur
     private double scoreOfTheArround(Node n){
         Maze maze = n.getState().getMaze();
         double score = 0;
@@ -189,7 +207,6 @@ public class FirstAI extends AbstractAI{
             gameObjects = cell.getGameObjects();
             for (GameObject object:gameObjects) {
                 if (object instanceof BonusWall || object instanceof Bonus) {
-                    System.out.println("On découvre un bonus aux alentours");
                     score += this.BONUS_TAKEN / 2;
                 }else if(object instanceof Player){
                     score -= this.PLAYER_KILLED;
