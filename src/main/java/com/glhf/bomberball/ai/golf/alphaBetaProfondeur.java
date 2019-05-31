@@ -41,6 +41,7 @@ public class alphaBetaProfondeur extends AbstractAI{
         // A loop to find the best action
         while(alpha != 1) {
             maxDepth ++;
+            System.out.println("Meilleur profondeur étudié : " + maxDepth);
             for (Action tmpAction : listAction) {
                 if (alpha >= beta) return this.getMemorizedAction();
                 //System.out.println("Test de l'action x : " + tmpAction.getX() + " y  : " + tmpAction.getY());
