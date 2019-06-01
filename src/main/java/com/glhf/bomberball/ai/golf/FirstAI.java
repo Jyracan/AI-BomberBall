@@ -24,6 +24,7 @@ public class FirstAI extends AbstractAI{
     private final double PLAYER_KILLED = 1;
     private final double WALL = -2;
     private final double BADMOVE = -2;
+    private boolean flag_box_destroyed = false;
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
         super(config,"necromancer","FirstAi",playerId);
@@ -121,7 +122,10 @@ public class FirstAI extends AbstractAI{
         if(score ==0 && aUtiliseUneBombe(n) ) score = BADMOVE;  //TODO : Mal implémenté fait buguer le player, il ne va plus tuer (décommenter l51 et l62)
         else{
             score += bonusGrabbed(n);
-            score += scoreOfTheArround(n);
+            double tmpScore = scoreOfTheArround(n);
+            if(!flag_box_destroyed) {
+                score += tmpScore;
+            }
             if(!n.isMax()) score= - score;
         }
         return score;
@@ -236,6 +240,7 @@ public class FirstAI extends AbstractAI{
 
     // TODO : Lui dire de se tenir à une case d'espace d'une caisse BONUS pour l'exploser sans perdre une action
     private double scoreOfTheArround(Node n){
+        //flag_box_destroyed = false;
         ArrayList<Cell> adjacentCells;
         ArrayList<Cell> tmpCells;
         Maze maze = n.getState().getMaze();
@@ -260,6 +265,7 @@ public class FirstAI extends AbstractAI{
                     score += this.BONUS_TAKEN / 2;
                 }else if(object instanceof BonusWall ){
                     score += this.BONUS_BOX_DESTROYED / 2;
+                    //flag_box_destroyed = true;
                 }else if(object instanceof Player){
                     if(n.getState().getCurrentPlayer().getX() != object.getX() || n.getState().getCurrentPlayer().getY() != object.getY()){
                         score -= this.PLAYER_KILLED/2;

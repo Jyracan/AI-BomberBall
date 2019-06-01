@@ -18,3 +18,5 @@ build/**
 \.idea/
 
 *.class
+
+out/production/classes/META-INF/ia_bomberball\.main\.kotlin_module
