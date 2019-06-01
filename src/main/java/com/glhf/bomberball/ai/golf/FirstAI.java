@@ -49,19 +49,19 @@ public class FirstAI extends AbstractAI{
             }
             score = calculScore(tmpNode);
             //System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
-            //if (score != BADMOVE){
-            if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
-                if(firstNode.getBestSon() != null){
-                    lastAction = firstNode.getBestSon().getAction();
-//                        System.out.println("Mise à jour de la nouvelle meilleure action : " + lastAction + " score associé : " + score );
-                    this.setMemorizedAction(lastAction);
+            if (score != BADMOVE){
+                if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
+                    if(firstNode.getBestSon() != null){
+                        lastAction = firstNode.getBestSon().getAction();
+    //                        System.out.println("Mise à jour de la nouvelle meilleure action : " + lastAction + " score associé : " + score );
+                        this.setMemorizedAction(lastAction);
+                    }
                 }
-            }
-            if( !isTerminal(tmpNode.getState())) {
-                //System.out.println("On remplis OPEN");
-                remplirOpen(tmpNode);
-            }
-            //}else System.out.println("Detection d'un mauvais coup " + tmpNode.getAction());
+                if( !isTerminal(tmpNode.getState())) {
+                    //System.out.println("On remplis OPEN");
+                    remplirOpen(tmpNode);
+                }
+            }//else System.out.println("Detection d'un mauvais coup " + tmpNode.getAction());
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
         return this.getMemorizedAction();
