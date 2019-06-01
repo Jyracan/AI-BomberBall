@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class alphaBetaProfondeur extends AbstractAI{
-    private final double BOX_DESTROYED = 0.1;
-    private final double BONUS_BOX_DESTROYED = 0.2;
-    private final double BONUS_TAKEN = 0.3;
-    private final double BONUS_DESTROYED = -0.3;
+    private final double BOX_DESTROYED = 0.01;
+    private final double BONUS_BOX_DESTROYED = 0.02;
+    private final double BONUS_TAKEN = 0.05;
+    private final double BONUS_DESTROYED = -0.05;
     private final double PLAYER_KILLED = 1;
     private final double WALL = -2;
 
@@ -121,7 +121,11 @@ public class alphaBetaProfondeur extends AbstractAI{
     private double heuristique(GameState n) {
         double score=0;
         score += scoreDueToBomb(n);
-        if(n.getCurrentPlayerId() != this.getPlayerId()) score= - score;
+        if(score != 1 && score != -1){
+            score += scoreOfTheArround(n);
+            score += bonusGrabbed(n);
+            if(n.getCurrentPlayerId() != this.getPlayerId()) score= - score;
+        }
         return score;
     }
 
@@ -132,11 +136,12 @@ public class alphaBetaProfondeur extends AbstractAI{
     private double scoreDueToBomb(GameState n){
         double score = 0;   // Le score que nous allons renvoyer
         double cellScore;    // Le score associé à une cellule qui se trouve dans la range d'une bombe
+        boolean bombFind;
         Maze maze = n.getMaze();
-        // TODO : es-ce vraiment necessaire de parcourir tout le labyrinthe peut être un peu trop gros ...
+        // TODO : es-ce vraiment necessaire de parcourir tout le labyrinthe peut être un peu trop gros ... Idée d'amélioration ?
         for (int i=0;i<maze.getWidth();i++){          //on parcourt l'ensemble des cases du labyrinthe
             for (int j=0;j<maze.getHeight();j++){
-                boolean bombFind = false;
+                bombFind = false;
 //                System.out.println(i + " "+ j);
                 ArrayList<GameObject> objects = maze.getCellAt(i,j).getGameObjects();
                 // Boucle permettant de vérifier si il y a une bombe sur la case
@@ -151,7 +156,7 @@ public class alphaBetaProfondeur extends AbstractAI{
                     }
                     cellScore =0;
                     //BAS
-                    for(int c = 1;(c<range && cellScore==0 && j-c<maze.getHeight()); c++ ){
+                    for(int c = 1;(c<range && cellScore==0 && j-c>=0); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i,j-c), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
@@ -164,6 +169,7 @@ public class alphaBetaProfondeur extends AbstractAI{
                     cellScore =0;
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
+
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
@@ -196,6 +202,53 @@ public class alphaBetaProfondeur extends AbstractAI{
         return score;
     }
 
+    private double scoreOfTheArround(GameState n){
+        ArrayList<Cell> adjacentCells;
+        ArrayList<Cell> tmpCells;
+        Maze maze = n.getMaze();
+        double score = 0;
+        ArrayList<GameObject> gameObjects;
+        adjacentCells = maze.getCellAt(n.getCurrentPlayer().getX(), n.getCurrentPlayer().getY() ).getAdjacentCellsInMaze();
+        int size = adjacentCells.size();
+        for (int i =0; i<size; i++) {
+            if(! adjacentCells.get(i).hasInstanceOf(Wall.class)){
+                tmpCells = adjacentCells.get(i).getAdjacentCellsInMaze();
+                for (Cell tmpCell: tmpCells) {
+                    if(! adjacentCells.contains(tmpCell)){
+                        adjacentCells.add(tmpCell);
+                    }
+                }
+            }
+        }
+        for (Cell cell: adjacentCells) {
+            gameObjects = cell.getGameObjects();
+            for (GameObject object:gameObjects) {
+                if (object instanceof Bonus) {
+                    score += this.BONUS_TAKEN / 2;
+                }else if(object instanceof BonusWall ){
+                    score += this.BONUS_BOX_DESTROYED / 2;
+                }else if(object instanceof Player){
+                    if(n.getCurrentPlayer().getX() != object.getX() || n.getCurrentPlayer().getY() != object.getY()){
+                        score -= this.PLAYER_KILLED/2;
+                    }
+                }
+            }
+        }
+        return score;
+    }
+
+    /**
+     * @param n Node
+     * @return a float between 0 and 1 proportional to the number of bonus the IA has taken this turn
+     **/
+    private double bonusGrabbed(GameState n){
+        int nbBonus = 0;
+        nbBonus += n.getCurrentPlayer().bonus_moves;
+        nbBonus += n.getCurrentPlayer().bonus_bomb_number;
+        nbBonus += n.getCurrentPlayer().bonus_bomb_range;
+        return (nbBonus) * this.BONUS_TAKEN;
+    }
+    
     /**
      * Say if the state correspond to the end of a game
      * @param n State
