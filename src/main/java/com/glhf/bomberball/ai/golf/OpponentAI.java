@@ -24,7 +24,14 @@ public class OpponentAI extends AbstractAI {
 
     private final double BOX_DESTROYED = 0.1;
     private final double BONUS_BOX_DESTROYED = 0.2;
+    private final double BONUS_BOX_MOVE_DESTROYED = 0.2;
+    private final double BONUS_BOX_RANGE_DESTROYED = 0.2;
+    private final double BONUS_BOX_BOMB_DESTROYED = 0.2;
+
     private final double BONUS_TAKEN = 0.3;
+    private final double BONUS_MOVE_TAKEN = 0.3;
+    private final double BONUS_RANGE_TAKEN = 0.3;
+    private final double BONUS_BOMB_TAKEN = 0.3;
     private final double BONUS_DESTROYED = -0.5;
     private final double PLAYER_KILLED = 1;
     private final double PLAYER_ARROUND_WEIGHT = 100;
@@ -152,14 +159,14 @@ public class OpponentAI extends AbstractAI {
      **/
     private double bonusGrabbed(Node n){
         int nbBonus = 0;
-        nbBonus += n.getState().getCurrentPlayer().bonus_moves;
-        nbBonus += n.getState().getCurrentPlayer().bonus_bomb_number;
-        nbBonus += n.getState().getCurrentPlayer().bonus_bomb_range;
+        nbBonus += n.getState().getCurrentPlayer().bonus_moves * this.BONUS_MOVE_TAKEN;
+        nbBonus += n.getState().getCurrentPlayer().bonus_bomb_number * this.BONUS_BOMB_TAKEN;
+        nbBonus += n.getState().getCurrentPlayer().bonus_bomb_range * this.BONUS_RANGE_TAKEN;
         int oldNbBonus = 0;
-        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_moves;
-        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_bomb_number;
-        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_bomb_range;
-        return (nbBonus - oldNbBonus) * this.BONUS_TAKEN;
+        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_moves * this.BONUS_MOVE_TAKEN;
+        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_bomb_number * this.BONUS_BOMB_TAKEN;
+        oldNbBonus += n.getFather().getState().getCurrentPlayer().bonus_bomb_range* this.BONUS_RANGE_TAKEN;;
+        return (nbBonus - oldNbBonus);
     }
 
 
@@ -362,6 +369,17 @@ public class OpponentAI extends AbstractAI {
                 if(object instanceof IndestructibleWall){
                     score = this.WALL;
                 }else if (object instanceof BonusWall) {
+                    switch (((BonusWall) object).bonus.getType()) {
+                        case SPEED:
+                            score += BONUS_BOX_MOVE_DESTROYED;
+                            break;
+                        case BOMB_RANGE:
+                            score += BONUS_BOX_RANGE_DESTROYED;
+                            break;
+                        case BOMB_NUMBER:
+                            score += BONUS_BOX_BOMB_DESTROYED;
+                            break;
+                    }
                     score += this.BONUS_BOX_DESTROYED;
                 } else if (object instanceof DestructibleWall) {
                     score += this.BOX_DESTROYED;
