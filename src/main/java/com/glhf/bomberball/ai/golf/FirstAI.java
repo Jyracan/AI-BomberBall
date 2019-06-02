@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.glhf.bomberball.maze.MazeTransversal.getReacheableCellsInRange;
+
 public class FirstAI extends AbstractAI{
 
 
@@ -127,8 +129,10 @@ public class FirstAI extends AbstractAI{
             score += scoreDueToBomb(n);
                 score += bonusGrabbed(n);
                 score +=  scoreOfTheArround(n);
-                if(!n.isMax()) score= - score;
-//       }
+        score+=aggro(n,100);
+
+        if(!n.isMax()) score= - score;
+
        return score;
     }
 
@@ -187,6 +191,66 @@ public class FirstAI extends AbstractAI{
             }
             return false;
         }
+    }
+
+
+    /**
+     * @param n Node
+     * @return a value depending of the position of the 2 players
+     * rewards player that position close to their opponent while still being out of their effective range
+     * Walkable paths are taken into account
+     * ??? Function should only be used if a walkable path between the 2 players exists ???
+     */
+    private double aggro(Node n, double score){
+        int index  = n.getState().getCurrentPlayerId();
+        Player current = n.getState().getCurrentPlayer();
+        Player opponent = n.getState().getPlayers().get(1-index);
+        int h = n.getState().getMaze().getHeight();
+        int w = n.getState().getMaze().getWidth();
+        int range = h*w/2;
+        if (getReacheableCellsInRange(opponent.getCell(),range).contains(current.getCell())){
+            return pathAggro(n,score);
+        }else{
+            return noPathAggro(n,score);
+        }
+    }
+
+    /**
+     * @param n Node
+     * @return a value depending of the position of the 2 players
+     * rewards player that position close to their opponent while still being out of their effective range
+     * Walkable paths are taken into account
+     * ??? Function should only be used if a walkable path between the 2 players exists ???
+     */
+    private double pathAggro(Node n,double score){
+        int index  = n.getState().getCurrentPlayerId();
+        Player current = n.getState().getCurrentPlayer();
+        Player opponent = n.getState().getPlayers().get(1-index);
+        int opponentRange = opponent.getBombRange()+opponent.getNumberMoveRemaining(); //vérifier si NumberMoveRemaining est bien reset entre les tours
+        int range = opponentRange - current.getNumberMoveRemaining(); //prise en compte des mouvement restant au joueur actuel
+        if (getReacheableCellsInRange(opponent.getCell(),range).contains(current.getCell())){ //le joueur actuel sera forcemment à portée
+            return -1;                      //donc mauvaise heuristique
+        }
+        for (int i=1; i<10;i++){
+            if(getReacheableCellsInRange(opponent.getCell(),range+i).contains(current.getCell())){
+                return 1/(i*score);
+            }
+        }
+        return 1/(11*score);
+    }
+    /**
+     * @param n Node
+     * @return a value depending of the position of the 2 players
+     * rewards player that position aggressively if no path exists
+     * Only the absolute distance is taken into account
+     * ??? Function should only be used if NO walkable path between the 2 players exists ???
+     */
+    private double noPathAggro(Node n,double score){
+        int index  = n.getState().getCurrentPlayerId();
+        Player current = n.getState().getCurrentPlayer();
+        Player opponent = n.getState().getPlayers().get(1-index);
+        int distance = Math.abs(current.getX()-opponent.getX())+Math.abs(current.getY()-opponent.getY());
+        return 1/(distance*score);
     }
 
     /**
