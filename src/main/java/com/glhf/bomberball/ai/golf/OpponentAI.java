@@ -40,6 +40,7 @@ public class OpponentAI extends AbstractAI {
         remplirOpen(firstNode);
         Node tmpNode;
         int bestDepth =0;
+        System.out.println(gameState.getCurrentPlayer().getX() + " "+ gameState.getCurrentPlayer().getY());
         System.out.println("A la recherche du meilleur coup");
         while (! OPEN.isEmpty()){
             tmpNode = OPEN.pop();
