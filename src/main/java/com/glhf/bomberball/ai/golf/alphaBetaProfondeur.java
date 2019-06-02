@@ -19,15 +19,15 @@ public class alphaBetaProfondeur extends AbstractAI{
     private final double PLAYER_KILLED = 1;
     private final double WALL = -2;
 
-    private int maxDepth;
-    private int INITIAL_DEPTH = 9;
+    private int maxDepth= 15;
 
     public alphaBetaProfondeur(GameConfig config, String player_skin, int playerId) {
         super(config,"wogol","alphaBetaProfondeur",playerId);
         // TODO Auto-generated constructor stub
     }
 
-    @Override
+    @Override                //System.out.println("Test de l'action x : " + tmpAction.getX() + " y  : " + tmpAction.getY());
+
     public Action choosedAction(GameState gameState) {
         System.out.println("Le joueur IA joue ...");
         List<Action> listAction= gameState.getAllPossibleActions();
@@ -35,27 +35,23 @@ public class alphaBetaProfondeur extends AbstractAI{
         GameState tmpState;
         double tmpScore;
         double alpha = -1, beta = 1;
-        maxDepth = INITIAL_DEPTH;
-
+        int depth = 0;
         System.out.println("A la recherche du meilleur coup");
         // A loop to find the best action
-        while(alpha != 1) {
-            maxDepth ++;
-            System.out.println("Meilleur profondeur étudié : " + maxDepth);
+        while(depth != maxDepth) {
             for (Action tmpAction : listAction) {
                 if (alpha >= beta) return this.getMemorizedAction();
-                //System.out.println("Test de l'action x : " + tmpAction.getX() + " y  : " + tmpAction.getY());
                 tmpState = gameState.clone();
                 tmpState.apply(tmpAction);
-                //System.out.println("Nouveau joueur : j" +tmpState.getIdJoueurCourant() );
                 tmpScore = alphaBeta(tmpState, alpha, beta, 1);
-                //System.out.println("Score associé à cette action : "+tmpScore);
                 if (tmpScore > alpha) {
                     alpha = tmpScore;
                     this.setMemorizedAction(tmpAction);
                     System.out.println("Oh ! un meilleur coup a été trouvé " + tmpAction + " score associé : " + tmpScore);
                 }
             }
+            System.out.println("On à atteint la profondeur : " + depth);
+            depth ++;
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
         return this.getMemorizedAction();
@@ -65,7 +61,7 @@ public class alphaBetaProfondeur extends AbstractAI{
      * @param n A state of the game
      * @return the score : 1 is a win for you, -1 for your opponent  and 0 for a draw
      */
-    private double alphaBeta(GameState n, double alpha, double beta, int profondeur){
+    private double alphaBeta(GameState n, double alpha, double beta, int depth){
         //System.out.println("Utilisation de alphaBeta !");
 
         GameState tmpState;
@@ -80,20 +76,17 @@ public class alphaBetaProfondeur extends AbstractAI{
                 // Trying every action possible
                 for (Action tmpAction : listAction) {
                     if (alpha > beta) return alpha;
-                    if(profondeur>maxDepth) {
+                    if(depth>maxDepth) {
                         tmpScore = heuristique(n);
                     }else{
                         //System.out.println("Test de l'action x : " + tmpAction.getX() + " y  : " + tmpAction.getY());
                         tmpState = n.clone();
                         tmpState.apply(tmpAction);
                         //System.out.println("Nouveau joueur : j" +tmpState.getIdJoueurCourant() );
-
-                        tmpScore = alphaBeta(tmpState, alpha, beta, profondeur+1);
+                        tmpScore = alphaBeta(tmpState, alpha, beta, depth+1);
                     }
                     // Update alpha
                     if (tmpScore > alpha) alpha = tmpScore;
-
-
                 }
                 return alpha;
             } else {  // Min is playing !
@@ -101,13 +94,13 @@ public class alphaBetaProfondeur extends AbstractAI{
                 for (Action tmpAction : listAction) {
                     if (alpha > beta) return beta;
                     //System.out.println("Test de l'action x : " + tmpAction.getX() + " y  : " + tmpAction.getY());
-                    if(profondeur>maxDepth) {
+                    if(depth>maxDepth) {
                         tmpScore = heuristique(n);
                     }else{
                         tmpState = n.clone();
                         tmpState.apply(tmpAction);
                         //System.out.println("Nouveau joueur : j" +tmpState.getIdJoueurCourant() );
-                        tmpScore = alphaBeta(tmpState, alpha, beta, profondeur+1);
+                        tmpScore = alphaBeta(tmpState, alpha, beta, depth+1);
                     }
                     // Update beta
                     if (tmpScore < beta) beta = tmpScore;
@@ -162,14 +155,13 @@ public class alphaBetaProfondeur extends AbstractAI{
                     }
                     cellScore =0;
                     //DROITE
-                    for(int c = 1;(c<range && cellScore==0 && i+c<maze.getHeight()); c++ ){
+                    for(int c = 1;(c<range && cellScore==0 && i+c<maze.getWidth()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i+c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
                     cellScore =0;
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
-
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
@@ -227,10 +219,6 @@ public class alphaBetaProfondeur extends AbstractAI{
                     score += this.BONUS_TAKEN / 2;
                 }else if(object instanceof BonusWall ){
                     score += this.BONUS_BOX_DESTROYED / 2;
-                }else if(object instanceof Player){
-                    if(n.getCurrentPlayer().getX() != object.getX() || n.getCurrentPlayer().getY() != object.getY()){
-                        score -= this.PLAYER_KILLED/2;
-                    }
                 }
             }
         }

@@ -127,9 +127,9 @@ public class FirstAI extends AbstractAI{
 //        if(inRangeOfOpponent(n) && n.getState().getCurrentPlayer().getMovesRemaining() == 0){
 //            score -= (PLAYER_KILLED / 2);
 //        }else{
-            score += scoreDueToBomb(n);
-                score += bonusGrabbed(n);
-                score +=  scoreOfTheArround(n);
+        score += scoreDueToBomb(n);
+        score += bonusGrabbed(n);
+        score +=  scoreOfTheArround(n);
         score+=aggro(n,100);
 
         if(!n.isMax()) score= - score;
