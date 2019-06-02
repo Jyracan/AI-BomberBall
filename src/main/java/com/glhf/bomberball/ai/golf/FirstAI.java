@@ -24,8 +24,6 @@ public class FirstAI extends AbstractAI{
     private final double BONUS_DESTROYED = -0.5;
     private final double PLAYER_KILLED = 1;
     private final double WALL = -2;
-    private final double BADMOVE = -2;
-    private boolean flag_box_destroyed = false;
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
         super(config,"necromancer","FirstAi",playerId);
@@ -51,7 +49,6 @@ public class FirstAI extends AbstractAI{
             }
             score = calculScore(tmpNode);
             //System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
-            if (score != BADMOVE){
                 if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
                     if(firstNode.getBestSon() != null){
                         lastAction = firstNode.getBestSon().getAction();
@@ -63,7 +60,6 @@ public class FirstAI extends AbstractAI{
                     //System.out.println("On remplis OPEN");
                     remplirOpen(tmpNode);
                 }
-            }//else System.out.println("Detection d'un mauvais coup " + tmpNode.getAction());
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
         return this.getMemorizedAction();
@@ -77,7 +73,7 @@ public class FirstAI extends AbstractAI{
     private void remplirOpen(Node node){
         Action forbiden = forbiddenAction();
         List<Action> allPossibleActions = node.getState().getAllPossibleActions();
-        if(allPossibleActions.size() != 3 && lastAction != Action.ENDTURN) { // Vérification pas très propre qu'on ne se retrouve pas coincé dans un coin
+        if(allPossibleActions.size() != 2 && lastAction != Action.ENDTURN) { // Vérification pas très propre qu'on ne se retrouve pas coincé dans un coin
             for (Action a : allPossibleActions) {
                 if (a != forbiden) {
                     OPEN.addLast(new Node(a, node));
@@ -121,25 +117,19 @@ public class FirstAI extends AbstractAI{
         }else {
             return heuristique(n);
         }
-
     }
 
     private double heuristique(Node n) {
         double score=0;
-        score += scoreDueToBomb(n);
-        if(score ==0 && aUtiliseUneBombe(n) ) score = BADMOVE;  //TODO : Mal implémenté fait buguer le player, il ne va plus tuer (décommenter l51 et l62)
-        else {
-            score += bonusGrabbed(n);
-            double tmpScore = scoreOfTheArround(n);
-            if(!flag_box_destroyed) {
-                score += tmpScore;
-            }
-            if(!n.isMax()) score= - score;
-        }
-        if(inRangeOfOpponent(n) && n.getState().getCurrentPlayer().getMovesRemaining() == 0){
-            score = BADMOVE;
-        }
-        return score;
+//        if(inRangeOfOpponent(n) && n.getState().getCurrentPlayer().getMovesRemaining() == 0){
+//            score -= (PLAYER_KILLED / 2);
+//        }else{
+            score += scoreDueToBomb(n);
+                score += bonusGrabbed(n);
+                score +=  scoreOfTheArround(n);
+                if(!n.isMax()) score= - score;
+//       }
+       return score;
     }
 
     /**
@@ -239,7 +229,6 @@ public class FirstAI extends AbstractAI{
                     cellScore =0;
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
-
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
@@ -249,9 +238,7 @@ public class FirstAI extends AbstractAI{
         return score;
     }
 
-    // TODO : Lui dire de se tenir à une case d'espace d'une caisse BONUS pour l'exploser sans perdre une action
     private double scoreOfTheArround(Node n){
-        //flag_box_destroyed = false;
         ArrayList<Cell> adjacentCells;
         ArrayList<Cell> tmpCells;
         Maze maze = n.getState().getMaze();
@@ -276,11 +263,6 @@ public class FirstAI extends AbstractAI{
                     score += this.BONUS_TAKEN / 2;
                 }else if(object instanceof BonusWall ){
                     score += this.BONUS_BOX_DESTROYED / 2;
-                    //flag_box_destroyed = true;
-                }else if(object instanceof Player){
-                    if(n.getState().getCurrentPlayer().getX() != object.getX() || n.getState().getCurrentPlayer().getY() != object.getY()){
-                        score -= this.PLAYER_KILLED/2;
-                    }
                 }
             }
         }
@@ -321,7 +303,6 @@ public class FirstAI extends AbstractAI{
      * @return true if it's the end of the game
      */
     private boolean isTerminal (GameState n){
-        //TODO : Il faut faire attention à ce que notre joueur soit toujours en vie
         return n.gameIsOver();
     }
 
