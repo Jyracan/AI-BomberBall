@@ -7,14 +7,14 @@ public class Node {
     private Action action;
     private GameState state;
     private double alpha, beta;
-    private Node father;
+    private Node father;    // La racine est la seule à ne pas avoir de noeud pêre
     private Node bestSon;
     private boolean max;
     private int idPlayer;
     private int depth;
 
     /**
-     * Use this constr to create the first node
+     * Constructeur pour la racine
      * @param state
      */
     public Node(GameState state, int idPlayer){
@@ -29,7 +29,7 @@ public class Node {
     }
 
     /**
-     * Use this node to create node using a father
+     * Constructeur pour les autres noeuds
      * @param action A list of action
      * @param father
      */

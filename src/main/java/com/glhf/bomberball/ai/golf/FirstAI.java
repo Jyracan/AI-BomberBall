@@ -10,6 +10,7 @@ import com.glhf.bomberball.utils.Action;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class FirstAI extends AbstractAI{
 
@@ -74,8 +75,15 @@ public class FirstAI extends AbstractAI{
      */
     private void remplirOpen(Node node){
         Action forbiden = forbiddenAction();
-        for (Action a : node.getState().getAllPossibleActions()) {
-            if(a != forbiden){
+        List<Action> allPossibleActions = node.getState().getAllPossibleActions();
+        if(allPossibleActions.size() != 3 && lastAction != Action.ENDTURN) { // Vérification pas très propre qu'on ne se retrouve pas coincé dans un coin
+            for (Action a : allPossibleActions) {
+                if (a != forbiden) {
+                    OPEN.addLast(new Node(a, node));
+                }
+            }
+        }else{
+            for (Action a : allPossibleActions) {
                 OPEN.addLast(new Node(a, node));
             }
         }

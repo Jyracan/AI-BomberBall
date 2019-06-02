@@ -32,10 +32,7 @@ public class Main{
 			bomberball=new Bomberball("FirstAI","OpponentAI");
 			
 		}else {
-				
-			
 			bomberball=new Bomberball();
-			
 		}
 		new LwjglApplication(bomberball,config);
 		
