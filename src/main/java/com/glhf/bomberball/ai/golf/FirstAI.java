@@ -232,7 +232,7 @@ public class FirstAI extends AbstractAI{
                     }
                     cellScore =0;
                     //DROITE
-                    for(int c = 1;(c<range && cellScore==0 && i+c<maze.getHeight()); c++ ){
+                    for(int c = 1;(c<range && cellScore==0 && i+c<maze.getWidth()); c++ ){
                         cellScore = scoreOfTheCell(maze.getCellAt(i+c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
