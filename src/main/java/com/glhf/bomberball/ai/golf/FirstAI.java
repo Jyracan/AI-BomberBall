@@ -26,6 +26,7 @@ public class FirstAI extends AbstractAI{
     private final double BONUS_TAKEN = 0.3;
     private final double BONUS_DESTROYED = -0.5;
     private final double PLAYER_KILLED = 1;
+    private final double PLAYER_ARROUND_WEIGHT = 100;
     private final double WALL = -2;
 
     public FirstAI(GameConfig config, String player_skin, int playerId) {
@@ -130,7 +131,7 @@ public class FirstAI extends AbstractAI{
         score += scoreDueToBomb(n);
         score += bonusGrabbed(n);
         score +=  scoreOfTheArround(n);
-        score+=aggro(n,100);
+        score+=aggro(n);
 
         if(!n.isMax()) score= - score;
 
@@ -216,7 +217,7 @@ public class FirstAI extends AbstractAI{
      * Walkable paths are taken into account
      * ??? Function should only be used if a walkable path between the 2 players exists ???
      */
-    private double aggro(Node n, double score){
+    private double aggro(Node n){
         int index  = n.getState().getCurrentPlayerId();
         Player current = n.getState().getCurrentPlayer();
         Player opponent = n.getState().getPlayers().get(1-index);
@@ -225,13 +226,10 @@ public class FirstAI extends AbstractAI{
         int h = n.getState().getMaze().getHeight();
         int w = n.getState().getMaze().getWidth();
         int range = h*w/3;//a verifier
-        System.out.println("range="+range);
         if (reacheablePlayer(currentCell,opponentCell,range)){
-            System.out.println("PATH AGGRO");
-            return pathAggro(n,score);
+            return pathAggro(n);
         }else{
-            System.out.println("NO PATH AGGRO");
-            return noPathAggro(n,score);
+            return noPathAggro(n);
         }
     }
 
@@ -242,7 +240,7 @@ public class FirstAI extends AbstractAI{
      * Walkable paths are taken into account
      * ??? Function should only be used if a walkable path between the 2 players exists ???
      */
-    private double pathAggro(Node n,double score){
+    private double pathAggro(Node n){
         int index  = n.getState().getCurrentPlayerId();
         Player current = n.getState().getCurrentPlayer();
         Player opponent = n.getState().getPlayers().get(1-index);
@@ -255,10 +253,10 @@ public class FirstAI extends AbstractAI{
         }
         for (int i=1; i<10;i++){
             if (reacheablePlayer(currentCell,opponentCell,range+i)){
-                return 1/(i*score);
+                return 1/(i* PLAYER_ARROUND_WEIGHT);
             }
         }
-        return 1/(11*score);
+        return 1/(11* PLAYER_ARROUND_WEIGHT);
     }
     /**
      * @param n Node
@@ -267,12 +265,12 @@ public class FirstAI extends AbstractAI{
      * Only the absolute distance is taken into account
      * ??? Function should only be used if NO walkable path between the 2 players exists ???
      */
-    private double noPathAggro(Node n,double score){
+    private double noPathAggro(Node n){
         int index  = n.getState().getCurrentPlayerId();
         Player current = n.getState().getCurrentPlayer();
         Player opponent = n.getState().getPlayers().get(1-index);
         int distance = Math.abs(current.getX()-opponent.getX())+Math.abs(current.getY()-opponent.getY());
-        return 1/(distance*score);
+        return 1/(distance* PLAYER_ARROUND_WEIGHT);
     }
 
     /**

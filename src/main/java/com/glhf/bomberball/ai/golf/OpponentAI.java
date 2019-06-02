@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.glhf.bomberball.maze.MazeTransversal.getReacheableCellsInRange;
+import static com.glhf.bomberball.utils.Directions.*;
+import static com.glhf.bomberball.utils.Directions.DOWN;
+
 public class OpponentAI extends AbstractAI {
 
 
@@ -23,9 +27,8 @@ public class OpponentAI extends AbstractAI {
     private final double BONUS_TAKEN = 0.3;
     private final double BONUS_DESTROYED = -0.5;
     private final double PLAYER_KILLED = 1;
+    private final double PLAYER_ARROUND_WEIGHT = 100;
     private final double WALL = -2;
-    private final double BADMOVE = -2;
-    private boolean flag_box_destroyed = false;
 
     public OpponentAI(GameConfig config, String player_skin, int playerId) {
         super(config,"imp","Opponent",playerId);
@@ -51,19 +54,17 @@ public class OpponentAI extends AbstractAI {
             }
             score = calculScore(tmpNode);
             //System.out.println("Action étudié : " + tmpNode.getAction() + " score associé : " + score);
-            if (score != BADMOVE){
-                if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
-                    if(firstNode.getBestSon() != null){
-                        lastAction = firstNode.getBestSon().getAction();
-                        //                        System.out.println("Mise à jour de la nouvelle meilleure action : " + lastAction + " score associé : " + score );
-                        this.setMemorizedAction(lastAction);
-                    }
+            if(tmpNode.update(score)){ // est vraie si il est interressant de faire une maj
+                if(firstNode.getBestSon() != null){
+                    lastAction = firstNode.getBestSon().getAction();
+                    //                        System.out.println("Mise à jour de la nouvelle meilleure action : " + lastAction + " score associé : " + score );
+                    this.setMemorizedAction(lastAction);
                 }
-                if( !isTerminal(tmpNode.getState())) {
-                    //System.out.println("On remplis OPEN");
-                    remplirOpen(tmpNode);
-                }
-            }//else System.out.println("Detection d'un mauvais coup " + tmpNode.getAction());
+            }
+            if( !isTerminal(tmpNode.getState())) {
+                //System.out.println("On remplis OPEN");
+                remplirOpen(tmpNode);
+            }
         }
         System.out.println("L'ia a pu terminer son calcul ! " );
         return this.getMemorizedAction();
@@ -77,7 +78,7 @@ public class OpponentAI extends AbstractAI {
     private void remplirOpen(Node node){
         Action forbiden = forbiddenAction();
         List<Action> allPossibleActions = node.getState().getAllPossibleActions();
-        if(allPossibleActions.size() != 3 && lastAction != Action.ENDTURN) { // Vérification pas très propre qu'on ne se retrouve pas coincé dans un coin
+        if(allPossibleActions.size() != 2 && lastAction != Action.ENDTURN) { // Vérification pas très propre qu'on ne se retrouve pas coincé dans un coin
             for (Action a : allPossibleActions) {
                 if (a != forbiden) {
                     OPEN.addLast(new Node(a, node));
@@ -121,19 +122,20 @@ public class OpponentAI extends AbstractAI {
         }else {
             return heuristique(n);
         }
-
     }
 
     private double heuristique(Node n) {
         double score=0;
-        if(inRangeOfOpponent(n) && n.getState().getCurrentPlayer().getMovesRemaining() == 0){
-            score = - PLAYER_KILLED;
-        }else{
-            score += scoreDueToBomb(n);
-            score += bonusGrabbed(n);
-            score +=  scoreOfTheArround(n);
-            if(!n.isMax()) score= - score;
-        }
+//        if(inRangeOfOpponent(n) && n.getState().getCurrentPlayer().getMovesRemaining() == 0){
+//            score -= (PLAYER_KILLED / 2);
+//        }else{
+        score += scoreDueToBomb(n);
+        score += bonusGrabbed(n);
+        score +=  scoreOfTheArround(n);
+        score+=aggro(n);
+
+        if(!n.isMax()) score= - score;
+
         return score;
     }
 
@@ -194,6 +196,84 @@ public class OpponentAI extends AbstractAI {
         }
     }
 
+
+    private boolean reacheablePlayer(Cell a, Cell  b,int range){
+        Cell right = b.getAdjacentCell(RIGHT);
+        Cell left = b.getAdjacentCell(LEFT);
+        Cell up = b.getAdjacentCell(UP);
+        Cell down = b.getAdjacentCell(DOWN);
+        if (getReacheableCellsInRange(a,range).contains(right) ||
+                getReacheableCellsInRange(a,range).contains(left) ||
+                getReacheableCellsInRange(a,range).contains(up) ||
+                getReacheableCellsInRange(a,range).contains(down)){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param n Node
+     * @return a value depending of the position of the 2 players
+     * rewards player that position close to their opponent while still being out of their effective range
+     * Walkable paths are taken into account
+     * ??? Function should only be used if a walkable path between the 2 players exists ???
+     */
+    private double aggro(Node n){
+        int index  = n.getState().getCurrentPlayerId();
+        Player current = n.getState().getCurrentPlayer();
+        Player opponent = n.getState().getPlayers().get(1-index);
+        Cell currentCell = current.getCell();
+        Cell opponentCell = opponent.getCell();
+        int h = n.getState().getMaze().getHeight();
+        int w = n.getState().getMaze().getWidth();
+        int range = h*w/3;//a verifier
+        if (reacheablePlayer(currentCell,opponentCell,range)){
+            return pathAggro(n);
+        }else{
+            return noPathAggro(n);
+        }
+    }
+
+    /**
+     * @param n Node
+     * @return a value depending of the position of the 2 players
+     * rewards player that position close to their opponent while still being out of their effective range
+     * Walkable paths are taken into account
+     * ??? Function should only be used if a walkable path between the 2 players exists ???
+     */
+    private double pathAggro(Node n){
+        int index  = n.getState().getCurrentPlayerId();
+        Player current = n.getState().getCurrentPlayer();
+        Player opponent = n.getState().getPlayers().get(1-index);
+        Cell currentCell = current.getCell();
+        Cell opponentCell = opponent.getCell();
+        int opponentRange = opponent.getBombRange()+opponent.getNumberMoveRemaining(); //vérifier si NumberMoveRemaining est bien reset entre les tours
+        int range = opponentRange - current.getNumberMoveRemaining(); //prise en compte des mouvement restant au joueur actuel
+        if (reacheablePlayer(currentCell,opponentCell,range)){//si le joueur finit forcemment son tour à portée de l'adversaire
+            return - PLAYER_KILLED/2;
+        }
+        for (int i=1; i<10;i++){
+            if (reacheablePlayer(currentCell,opponentCell,range+i)){
+                return 1/(i* PLAYER_ARROUND_WEIGHT);
+            }
+        }
+        return 1/(11* PLAYER_ARROUND_WEIGHT);
+    }
+    /**
+     * @param n Node
+     * @return a value depending of the position of the 2 players
+     * rewards player that position aggressively if no path exists, as close as possible to the enemy
+     * Only the absolute distance is taken into account
+     * ??? Function should only be used if NO walkable path between the 2 players exists ???
+     */
+    private double noPathAggro(Node n){
+        int index  = n.getState().getCurrentPlayerId();
+        Player current = n.getState().getCurrentPlayer();
+        Player opponent = n.getState().getPlayers().get(1-index);
+        int distance = Math.abs(current.getX()-opponent.getX())+Math.abs(current.getY()-opponent.getY());
+        return 1/(distance* PLAYER_ARROUND_WEIGHT);
+    }
+
     /**
      * @param n Node
      * @return a float between 0 and 1 proportional to the number of crates destroyed
@@ -234,7 +314,6 @@ public class OpponentAI extends AbstractAI {
                     cellScore =0;
                     //GAUCHE
                     for(int c = 1;(c<range && cellScore==0 && i-c>=0); c++ ){
-
                         cellScore = scoreOfTheCell(maze.getCellAt(i-c,j), n);
                         if(cellScore != this.WALL) score += cellScore;
                     }
@@ -244,9 +323,7 @@ public class OpponentAI extends AbstractAI {
         return score;
     }
 
-    // TODO : Lui dire de se tenir à une case d'espace d'une caisse BONUS pour l'exploser sans perdre une action
     private double scoreOfTheArround(Node n){
-        //flag_box_destroyed = false;
         ArrayList<Cell> adjacentCells;
         ArrayList<Cell> tmpCells;
         Maze maze = n.getState().getMaze();
@@ -271,11 +348,6 @@ public class OpponentAI extends AbstractAI {
                     score += this.BONUS_TAKEN / 2;
                 }else if(object instanceof BonusWall ){
                     score += this.BONUS_BOX_DESTROYED / 2;
-                    //flag_box_destroyed = true;
-                }else if(object instanceof Player){
-                    if(n.getState().getCurrentPlayer().getX() != object.getX() || n.getState().getCurrentPlayer().getY() != object.getY()){
-                        score -= this.PLAYER_KILLED/2;
-                    }
                 }
             }
         }
@@ -316,7 +388,6 @@ public class OpponentAI extends AbstractAI {
      * @return true if it's the end of the game
      */
     private boolean isTerminal (GameState n){
-        //TODO : Il faut faire attention à ce que notre joueur soit toujours en vie
         return n.gameIsOver();
     }
 
